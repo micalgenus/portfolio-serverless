@@ -1,3 +1,16 @@
 {
-  "presets": [["@babel/env", { "targets": { "node": "8" } }], "@babel/preset-typescript"]
+  "presets": [["@babel/env", { "targets": { "node": "8" } }], "@babel/preset-typescript"],
+  "plugins": [
+    [
+      "module-resolver",
+      {
+        "root": ["./src"],
+        "alias": {
+          "@": "./src",
+          "underscore": "lodash"
+        }
+      }
+    ]
+  ],
+  "comments": false
 }
