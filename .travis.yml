@@ -11,6 +11,7 @@ branches:
     - develop
 
 before_install:
+  - openssl aes-256-cbc -K $encrypted_076465f680f2_key -iv $encrypted_076465f680f2_iv -in keyfile.json.enc -out keyfile.json -d
   - yarn global add serverless
 
 install:
@@ -21,8 +22,3 @@ before_script:
 
 script:
   - yarn deploy:gcp
-# Generate your secure token with the travis gem:
-# get Github token from your Travis CI profile page
-# gem install travis
-# GH_TOKEN from https://github.com/settings/tokens
-# travis encrypt 'GIT_NAME="YOUR_USERNAME" GIT_EMAIL="YOUR_EMAIL" GH_TOKEN=YOUR_TOKEN'
