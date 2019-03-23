@@ -25,10 +25,10 @@ package:
     - keyfile.json
 
 functions:
-  first:
-    handler: http
+  graphql:
+    handler: graphql
     events:
-      - http: path
+      - http: POST graphql
   # NOTE: the following uses an "event" event (pubSub event in this case).
   # Please create the corresponding resources in the Google Cloud
   # before deploying this service through Serverless
