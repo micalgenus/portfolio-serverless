@@ -10,38 +10,17 @@ branches:
   only:
     - develop
 
-# services:
-#   - docker
-
-# before_install:
-#   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-#   - chmod +x ./cc-test-reporter
-
 before_install:
   - yarn global add serverless
 
 install:
   - yarn
 
-# before_script:
-#   - git config --global user.email "micalgenus@gmail.com"
-#   - git config --global user.name "GyeongSu Han"
-#   - SHA=$(git log | grep -E [a-z0-9]{40} | cut -d " " -f2 | head -1)
-#   - ./cc-test-reporter before-build
-
 script:
   - yarn build
-#   - yarn run test
-#   - yarn run test --coverage
-#   - yarn run gh-pages:build
-#   - docker build -t $USERNAME/portfolio:develop .
 
 after_script:
-  - yarn deploy
-#   - ./cc-test-reporter after-build --id $CC_TEST_REPORTER_ID --exit-code $TRAVIS_TEST_RESULT
-#   - ./node_modules/gh-pages/bin/gh-pages.js -d build -e portfolio -b master -u "micalgenus <micalgenus@gmail.com>" -r https://$GITHUB_TOKEN@github.com/$USERNAME/$REPO -m "Updating from $USERNAME/portfolio@$SHA"
-#   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD && docker push micalgenus/portfolio:develop && docker logout
-
+  - yarn deploy:gcp
 # Generate your secure token with the travis gem:
 # get Github token from your Travis CI profile page
 # gem install travis
