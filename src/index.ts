@@ -1,4 +1,3 @@
-import * as dotenv from 'dotenv';
+import '@/config';
 
-dotenv.config();
 export { default as graphql } from '@/graphql';
