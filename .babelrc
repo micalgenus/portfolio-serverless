@@ -9,5 +9,7 @@
       }
     ]
   ],
+  "sourceMaps": true,
+  "ignore": ["**/*.test.js", "**/*.spec.js", "**/*.test.ts", "**/*.spec.ts"],
   "comments": false
 }
