@@ -21,4 +21,9 @@ before_script:
   - yarn build
 
 script:
-  - yarn deploy:gcp
+  - yarn test:js
+  # - yarn test:ts
+
+deploy:
+  provider: script
+  script: yarn deploy:gcp
