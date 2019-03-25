@@ -13,16 +13,19 @@ branches:
 before_install:
   - openssl aes-256-cbc -K $encrypted_076465f680f2_key -iv $encrypted_076465f680f2_iv -in keyfile.json.enc -out keyfile.json -d
   - yarn global add serverless
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
 
 install:
   - yarn
 
 before_script:
   - yarn build
+  - ./cc-test-reporter before-build
 
 script:
-  - yarn test:js
-  # - yarn test:ts
+  - yarn test
+  - yarn test:coverage
 
 deploy:
   provider: script
@@ -30,3 +33,6 @@ deploy:
   skip_cleanup: true
   on:
     branch: develop
+
+after_script:
+  - ./cc-test-reporter after-build --id $CC_TEST_REPORTER_ID --exit-code $TRAVIS_TEST_RESULT
