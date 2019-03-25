@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "babel src --out-dir dist --copy-files --extensions \".ts,.tsx\" --source-maps inline",
+    "build": "babel src --out-dir dist --copy-files --extensions \".ts,.tsx\" --source-maps",
     "deploy:gcp": "serverless deploy"
   },
   "author": "micalgenus.com",
@@ -21,6 +21,7 @@
     "serverless-google-cloudfunctions": "*"
   },
   "dependencies": {
+    "@google-cloud/datastore": "^3.1.2",
     "@types/dotenv": "^6.1.0",
     "apollo-server-express": "^2.4.8",
     "body-parser": "^1.18.3",
