@@ -22,7 +22,13 @@ package:
     - node_modules/**
     - .gitignore
     - .git/**
+    - .travis.yml
+    - .babelrc
+    - .editorconfig
+    - .prettierrc
+    - tsconfig.json
     - keyfile.json
+    - keyfile.json.enc
 
 functions:
   graphql:
