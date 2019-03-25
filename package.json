@@ -6,7 +6,8 @@
   "scripts": {
     "build": "babel src --out-dir dist --copy-files --extensions \".ts,.tsx\"",
     "deploy": "yarn deploy:gcp",
-    "deploy:gcp": "serverless deploy"
+    "deploy:gcp": "serverless deploy",
+    "test:js": "mocha ./dist/**/*.spec.js"
   },
   "author": "micalgenus.com",
   "license": "MIT",
