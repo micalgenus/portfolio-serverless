@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "babel src --out-dir dist --copy-files --extensions \".ts,.tsx\" --source-maps",
+    "deploy": "yarn deploy:gcp",
     "deploy:gcp": "serverless deploy"
   },
   "author": "micalgenus.com",
