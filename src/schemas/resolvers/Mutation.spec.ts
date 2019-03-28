@@ -50,4 +50,60 @@ describe('GraphQL Mutation', function() {
       assert.equal(message, 'Invalid email');
     });
   });
+
+  describe('login', function() {
+    it('invalid arguments', async function() {
+      const message = await Mutation.login(null, { password: 'test1234' }).catch(err => err.message);
+      assert.equal(message, 'user, id or email is required.');
+    });
+
+    it('invalid id', async function() {
+      const message = await Mutation.login(null, { id: 'invalid', password: 'test1234' }).catch(err => err.message);
+      assert.equal(message, 'No user with that id');
+    });
+
+    it('invalid email', async function() {
+      const message = await Mutation.login(null, { email: 'invalid', password: 'test1234' }).catch(err => err.message);
+      assert.equal(message, 'Invalid email');
+    });
+
+    it('invalid password', async function() {
+      const message = await Mutation.login(null, { id: 'tester', password: 'invalid' }).catch(err => err.message);
+      assert.equal(message, 'Incorrect password');
+    });
+
+    it('not exist email', async function() {
+      const message = await Mutation.login(null, { email: 'invalid@invalid.com', password: '1234' }).catch(err => err.message);
+      assert.equal(message, 'No user with that email');
+    });
+
+    it('empty password', async function() {
+      const message = await Mutation.login(null, { id: 'tester' }).catch(err => err.message);
+      assert.equal(message, 'A password is required.');
+    });
+
+    it('success with user(id)', async function() {
+      const token = await Mutation.login(null, { user: 'tester', password: 'test1234' });
+      const { _id, iat, exp, ...user } = await verify(token);
+      assert.deepEqual(user, { id: 'tester', username: 'tester', email: 'tester@gmail.com' });
+    });
+
+    it('success with user(email)', async function() {
+      const token = await Mutation.login(null, { user: 'tester@gmail.com', password: 'test1234' });
+      const { _id, iat, exp, ...user } = await verify(token);
+      assert.deepEqual(user, { id: 'tester', username: 'tester', email: 'tester@gmail.com' });
+    });
+
+    it('success with id', async function() {
+      const token = await Mutation.login(null, { id: 'tester', password: 'test1234' });
+      const { _id, iat, exp, ...user } = await verify(token);
+      assert.deepEqual(user, { id: 'tester', username: 'tester', email: 'tester@gmail.com' });
+    });
+
+    it('success with email', async function() {
+      const token = await Mutation.login(null, { email: 'tester@gmail.com', password: 'test1234' });
+      const { _id, iat, exp, ...user } = await verify(token);
+      assert.deepEqual(user, { id: 'tester', username: 'tester', email: 'tester@gmail.com' });
+    });
+  });
 });

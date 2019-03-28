@@ -35,6 +35,37 @@ class UserDatabase extends DataStore {
 
     return UserDatabase.createJwtToken({ ...newUser });
   }
+
+  static async compareUserPasswordAndLogin(user, password = null) {
+    if (!password) throw new Error('A password is required.');
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) throw new Error('Incorrect password');
+
+    return this.createJwtToken({ ...user });
+  }
+
+  async login({ user = '', password }) {
+    if (emailRegex.test(user)) return this.loginByEmail({ email: user, password });
+    return this.loginById({ id: user, password });
+  }
+
+  async loginById({ id, password }) {
+    // Check exist user id
+    const { entities: existId } = await this.find([{ key: 'id', op: '=', value: id }]);
+    if (!existId.length) throw new Error('No user with that id');
+
+    return UserDatabase.compareUserPasswordAndLogin(existId[0], password);
+  }
+
+  async loginByEmail({ email, password }) {
+    if (!emailRegex.test(email)) throw new Error('Invalid email');
+
+    // Check exist user id
+    const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: email }]);
+    if (!existEmail.length) throw new Error('No user with that email');
+
+    return UserDatabase.compareUserPasswordAndLogin(existEmail[0], password);
+  }
 }
 
 export default new UserDatabase();
