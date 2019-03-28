@@ -33,3 +33,20 @@ export interface DatabaseConnector {
   list: (limit: number, order: string, token: string | Buffer) => Promise<DatabaseFindItem>;
   delete: (id: string) => Promise<any>;
 }
+
+interface TableTemplate {
+  _id?: any;
+}
+
+/**
+ * @member id
+ * @member email
+ * @member username
+ * @member password
+ */
+export interface UserTable extends TableTemplate {
+  id: string;
+  email: string;
+  username: string;
+  password: string;
+}
