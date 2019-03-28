@@ -1,4 +1,7 @@
 import { Datastore } from '@google-cloud/datastore';
+import TestDatastore from 'nedb';
+
+import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem } from '@/interfaces';
 
 // export Google Cloud Datastore
 const datastore = new Datastore({ projectId: process.env.GOOGLE_DATASTORE_PROJECT_ID });
@@ -28,23 +31,23 @@ class DataStoreBasic {
 }
 
 // CURD Class
-export class DataStoreAbstract extends DataStoreBasic {
-  kind: string;
+class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
+  table: string;
 
-  constructor(kind: string) {
+  constructor(table: string) {
     super();
-    if (kind === '') throw new Error('DataStoreAbstract: kind의 값이 비어있습니다.');
-    this.kind = kind;
+    if (table === '') throw new Error('DataStoreAbstract: kind의 값이 비어있습니다.');
+    this.table = table;
   }
 
   async create(data) {
     return this.update(null, data);
   }
 
-  async update(id: number, data) {
+  async update(id: string, data) {
     let key;
-    if (id) key = datastore.key([this.kind, Math.floor(id || NaN)]);
-    else key = datastore.key(this.kind);
+    if (id) key = datastore.key([this.table, parseInt(id, 10)]);
+    else key = datastore.key(this.table);
 
     const entity = {
       key: key,
@@ -53,15 +56,15 @@ export class DataStoreAbstract extends DataStoreBasic {
 
     return new Promise((resolve, reject) => {
       datastore.save(entity, err => {
-        data.id = entity.key.id;
+        data._id = entity.key.id;
         if (err) return reject(err);
         else return resolve(data);
       });
     });
   }
 
-  async read(id: number) {
-    const key = datastore.key([this.kind, Math.floor(id || NaN)]);
+  async read(id: string) {
+    const key = datastore.key([this.table, parseInt(id, 10)]);
     return new Promise((resolve, reject) => {
       datastore.get(key, (err, entity) => {
         if (!err && !entity) {
@@ -76,14 +79,12 @@ export class DataStoreAbstract extends DataStoreBasic {
     });
   }
 
-  async list(limit: number, order: string = 'title', token: string | Buffer) {
-    const q = datastore
-      .createQuery([this.kind])
-      .limit(limit)
-      .order(order)
-      .start(token);
+  async find(filters: DatabaseFilterItem[]) {
+    let q = datastore.createQuery([this.table]);
 
-    return new Promise((resolve, reject) => {
+    for (const filter of filters) q = q.filter(filter.key, filter.op, filter.value);
+
+    return new Promise<DatabaseFindItem>((resolve, reject) => {
       datastore.runQuery(q, (err, entities, nextQuery) => {
         if (err) return reject(err);
         else {
@@ -94,8 +95,26 @@ export class DataStoreAbstract extends DataStoreBasic {
     });
   }
 
-  async delete(id: number) {
-    const key = datastore.key([this.kind, Math.floor(id || NaN)]);
+  async list(limit: number, order: string = 'title', token: string | Buffer) {
+    const q = datastore
+      .createQuery([this.table])
+      .limit(limit)
+      .order(order)
+      .start(token);
+
+    return new Promise<DatabaseFindItem>((resolve, reject) => {
+      datastore.runQuery(q, (err, entities, nextQuery) => {
+        if (err) return reject(err);
+        else {
+          const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
+          return resolve({ entities: entities.map(this.fromDatastore), hasMore });
+        }
+      });
+    });
+  }
+
+  async delete(id: string) {
+    const key = datastore.key([this.table, parseInt(id, 10)]);
     return new Promise((resolve, reject) => {
       datastore.delete(key, (err, response) => {
         if (err) return reject(err);
@@ -104,3 +123,129 @@ export class DataStoreAbstract extends DataStoreBasic {
     });
   }
 }
+
+const executeFilterOperation = (value, op, compare) => {
+  switch (op) {
+    case '=':
+      return value === compare;
+    case '<':
+      return value < compare;
+    case '>':
+      return value > compare;
+    case '<=':
+      return value <= compare;
+    case '>=':
+      return value >= compare;
+    default:
+      return false;
+  }
+};
+
+class TestDataStoreAbstract implements DatabaseConnector {
+  table: string;
+  db: TestDatastore;
+
+  constructor(table: string) {
+    if (table === '') throw new Error('TestDataStoreAbstract: kind의 값이 비어있습니다.');
+    this.table = table;
+    this.db = new TestDatastore();
+  }
+
+  async create(data) {
+    return new Promise((resolve, reject) =>
+      this.db.insert(data, (err, newDocs) => {
+        if (err) return reject(err);
+        return resolve(newDocs);
+      })
+    );
+  }
+
+  async update(id: string, data) {
+    return new Promise(resolve => this.db.update({ _id: id }, { $set: { ...data } }, () => resolve(this.read(id))));
+  }
+
+  async read(id: string) {
+    return new Promise((resolve, reject) =>
+      this.db.findOne({ _id: id }, function(err, doc) {
+        if (err) return reject(err);
+        return resolve(doc);
+      })
+    );
+  }
+
+  async find(filters: DatabaseFilterItem[]) {
+    return new Promise<DatabaseFindItem>((resolve, reject) =>
+      this.db.find(
+        {
+          $where: function() {
+            return !!filters.reduce((r, filter) => {
+              if (r === false) return false;
+              if (executeFilterOperation(r[filter.key], filter.op, filter.value)) return r;
+              return false;
+            }, this);
+          },
+        },
+        function(err, docs) {
+          if (err) return reject(err);
+          return resolve({ entities: docs, hasMore: false });
+        }
+      )
+    );
+  }
+
+  async list(limit: number, order: string, token: string | Buffer) {
+    return new Promise<DatabaseFindItem>((resolve, reject) =>
+      this.db
+        .find({})
+        .skip(parseInt(token.toString(), 10) || 0)
+        .sort({ [order]: 1 })
+        .limit(limit || 10)
+        .exec(function(err, docs) {
+          if (err) return reject(err);
+          return resolve({ entities: docs, hasMore: false });
+        })
+    );
+  }
+
+  async delete(id: string) {
+    return new Promise((resolve, reject) =>
+      this.db.remove({ _id: id }, function(err, result) {
+        if (err) return reject(err);
+        return resolve(result !== 0);
+      })
+    );
+  }
+}
+
+/**
+ * @member connector
+ */
+class AbstractedDataStore implements DatabaseConnector {
+  table: string;
+  connector: DatabaseConnector;
+
+  constructor(table: string) {
+    this.connector = process.env.NODE_ENV === 'test' ? new TestDataStoreAbstract(table) : new DataStoreAbstract(table);
+  }
+
+  async create(data: any) {
+    return this.connector.create(data);
+  }
+  async update(id: string, data: any) {
+    return this.connector.update(id, data);
+  }
+  async read(id: string) {
+    return this.connector.read(id);
+  }
+  async find(filters: DatabaseFilterItem[]) {
+    return this.connector.find(filters);
+  }
+  async list(limit: number, order: string, token: string | Buffer) {
+    return this.connector.list(limit, order, token);
+  }
+  async delete(id: string) {
+    return this.connector.delete(id);
+  }
+}
+
+export default AbstractedDataStore;

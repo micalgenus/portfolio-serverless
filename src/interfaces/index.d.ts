@@ -1,6 +1,8 @@
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
 import { Request } from 'express';
 
+export * from './database';
+
 /**
  * @extends Express.Request
  * @desc Add AuthorizationRequest.user
