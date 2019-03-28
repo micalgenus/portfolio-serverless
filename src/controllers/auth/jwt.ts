@@ -49,9 +49,10 @@ const decrypyJwtWithRSA = token => {
 
 const encryptJwt = isCanEncryptAndDecryptJwtWithRsa ? encryptJwtWithRSA : token => token;
 const decryptJwt = isCanEncryptAndDecryptJwtWithRsa ? decrypyJwtWithRSA : token => token;
+const JWT_KEY = process.env.PRIVATE_KEY || Math.random().toString();
 
-export const createToken = async ({ iat, exp, ...data }) => {
-  return [JWT_PREFIX, encryptJwt(jwt.sign({ ...data }, process.env.JWT_SECRET, { expiresIn: '1d' }))].join(' ');
+export const createToken = async ({ iat = null, exp = null, ...data }: any) => {
+  return [JWT_PREFIX, encryptJwt(jwt.sign({ ...data }, JWT_KEY, { expiresIn: '1d' }))].join(' ');
 };
 
 export const verify = async token => {
@@ -62,7 +63,7 @@ export const verify = async token => {
   if (bearer !== JWT_PREFIX || !encodedData) return null;
 
   try {
-    return jwt.verify(decryptJwt(encodedData), process.env.JWT_SECRET);
+    return jwt.verify(decryptJwt(encodedData), JWT_KEY);
   } catch (err) {
     if (!ignoreJwtErrors.includes(err.name)) console.error('Invalid JWT Error:', err);
     return null;

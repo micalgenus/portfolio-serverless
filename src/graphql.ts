@@ -1,6 +1,6 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import { authorization } from '@/controllers/auth/jwt';
+import { authorization } from '@/controllers/auth';
 
 import { AuthorizationExpressContext } from '@/interfaces';
 
