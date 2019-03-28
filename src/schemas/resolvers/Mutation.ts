@@ -1,9 +1,8 @@
-// const authController = require('@/controllers/auth');
+import UserModel from '@/models/User';
 
 module.exports = {
   // Handle user signup
-  // signup: async (_, { id, username, email, password }) => authController.signup({ id, username, email, password }),
-  signup: async (_, {}) => 'signup',
+  signup: async (_, { id, username, email, password }) => UserModel.signup({ id, username, email, password }),
 
   // Handles user login
   // login: async (_, { user, id, email, password }) => {
