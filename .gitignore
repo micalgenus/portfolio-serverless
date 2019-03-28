@@ -41,3 +41,7 @@ node_modules
 
 # editors
 /.vscode
+
+# certification files
+private.pem
+public.pem
