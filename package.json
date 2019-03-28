@@ -37,6 +37,8 @@
     "express": "^4.16.4",
     "graphql": "^14.1.1",
     "graphql-tools": "^4.0.4",
+    "jsonwebtoken": "^8.5.1",
+    "node-rsa": "^1.0.5",
     "typescript": "^3.3.4000"
   }
 }

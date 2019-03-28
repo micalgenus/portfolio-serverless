@@ -1,16 +1,18 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-// const { authorization } = require('@/controllers/auth/jwt');
+import { authorization } from '@/controllers/auth/jwt';
 
-const schema = require('@/schemas');
+import { AuthorizationExpressContext } from '@/interfaces';
+
+import schema from '@/schemas';
 
 const app = express();
 
-// app.use(authorization);
+app.use(authorization);
 
 const server = new ApolloServer({
   schema,
-  // context: ({ req, res }) => ({ user: req.user }),
+  context: ({ req, res }: AuthorizationExpressContext) => ({ user: req.user }),
 });
 
 server.applyMiddleware({ app, path: '/' });

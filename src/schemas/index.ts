@@ -24,4 +24,4 @@ const rs = fs
 const resolvers = {};
 for (let resolver of rs) resolvers[resolver] = require(path.join(__dirname, RESOLVER_DIR, resolver));
 
-module.exports = makeExecutableSchema({ typeDefs, resolvers });
+export default makeExecutableSchema({ typeDefs, resolvers });
