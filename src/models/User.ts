@@ -66,6 +66,15 @@ class UserDatabase extends DataStore {
 
     return UserDatabase.compareUserPasswordAndLogin(existEmail[0], password);
   }
+
+  async getUserInfoByPk(id) {
+    if (!id) throw new Error('Required id');
+
+    const userinfo = await this.read(id);
+    if (!userinfo) throw new Error('User not found');
+
+    return userinfo;
+  }
 }
 
 export default new UserDatabase();
