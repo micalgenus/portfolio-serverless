@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt';
+
 import DataStore from './index';
 import { UserTable } from '@/interfaces';
 import { createToken } from '@/controllers/auth';
@@ -29,7 +31,7 @@ class UserDatabase extends DataStore {
     if (existEmail.length) throw new Error('Exist user email');
 
     // Create user
-    const newUser = await this.create({ id, email, username, password });
+    const newUser = await this.create({ id, email, username, password: await bcrypt.hash(password, 10) });
 
     return UserDatabase.createJwtToken({ ...newUser });
   }
