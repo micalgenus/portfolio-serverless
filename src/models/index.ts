@@ -1,4 +1,5 @@
 import { Datastore, Query } from '@google-cloud/datastore';
+import { Operator } from '@google-cloud/datastore/build/src/query';
 import TestDatastore from 'nedb';
 
 import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem } from '@/interfaces';
@@ -9,7 +10,7 @@ const datastore = new Datastore({ projectId: process.env.GOOGLE_DATASTORE_PROJEC
 // Basic Methods Class
 class DataStoreBasic {
   static fromDatastore(obj) {
-    obj.id = obj[Datastore.KEY].id;
+    obj._id = obj[Datastore.KEY].id;
     return obj;
   }
 
@@ -120,7 +121,7 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
   }
 }
 
-const executeFilterOperation = (value, op, compare) => {
+const executeFilterOperation = (value, op: Operator, compare) => {
   switch (op) {
     case '=':
       return value === compare;
