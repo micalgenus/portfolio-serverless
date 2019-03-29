@@ -1,4 +1,4 @@
-import { Datastore } from '@google-cloud/datastore';
+import { Datastore, Query } from '@google-cloud/datastore';
 import TestDatastore from 'nedb';
 
 import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem } from '@/interfaces';
@@ -8,12 +8,12 @@ const datastore = new Datastore({ projectId: process.env.GOOGLE_DATASTORE_PROJEC
 
 // Basic Methods Class
 class DataStoreBasic {
-  fromDatastore(obj) {
+  static fromDatastore(obj) {
     obj.id = obj[Datastore.KEY].id;
     return obj;
   }
 
-  toDatastore(obj, nonIndexed) {
+  static toDatastore(obj, nonIndexed) {
     nonIndexed = nonIndexed || [];
     const results = [];
     Object.keys(obj).forEach(k => {
@@ -51,7 +51,7 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
 
     const entity = {
       key: key,
-      data: this.toDatastore(data, ['description']),
+      data: DataStoreAbstract.toDatastore(data, ['description']),
     };
 
     return new Promise((resolve, reject) => {
@@ -74,7 +74,19 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
           };
         }
         if (err) return reject(err);
-        else return resolve(this.fromDatastore(entity));
+        else return resolve(DataStoreAbstract.fromDatastore(entity));
+      });
+    });
+  }
+
+  static async runQuery(q: Query) {
+    return new Promise<DatabaseFindItem>((resolve, reject) => {
+      datastore.runQuery(q, (err, entities, nextQuery) => {
+        if (err) return reject(err);
+        else {
+          const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
+          return resolve({ entities: entities.map(DataStoreAbstract.fromDatastore), hasMore });
+        }
       });
     });
   }
@@ -84,15 +96,7 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
 
     for (const filter of filters) q = q.filter(filter.key, filter.op, filter.value);
 
-    return new Promise<DatabaseFindItem>((resolve, reject) => {
-      datastore.runQuery(q, (err, entities, nextQuery) => {
-        if (err) return reject(err);
-        else {
-          const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
-          return resolve({ entities: entities.map(this.fromDatastore), hasMore });
-        }
-      });
-    });
+    return DataStoreAbstract.runQuery(q);
   }
 
   async list(limit: number, order: string = 'title', token: string | Buffer) {
@@ -102,15 +106,7 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
       .order(order)
       .start(token);
 
-    return new Promise<DatabaseFindItem>((resolve, reject) => {
-      datastore.runQuery(q, (err, entities, nextQuery) => {
-        if (err) return reject(err);
-        else {
-          const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
-          return resolve({ entities: entities.map(this.fromDatastore), hasMore });
-        }
-      });
-    });
+    return DataStoreAbstract.runQuery(q);
   }
 
   async delete(id: string) {
