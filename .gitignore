@@ -45,3 +45,6 @@ node_modules
 # certification files
 private.pem
 public.pem
+
+# travis encrypt files
+/travis-secret.tar
