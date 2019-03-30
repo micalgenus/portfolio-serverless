@@ -5,7 +5,7 @@ import { UserTable } from '@/interfaces';
 import { createToken } from '@/controllers/auth';
 
 import { checkEmptyItems } from '@/lib/utils';
-import { checkValidid, checkValidEmail } from '@/lib/utils/user';
+import { checkValidId, checkValidEmail } from '@/lib/utils/user';
 
 class UserDatabase extends DataStore {
   constructor() {
@@ -23,7 +23,7 @@ class UserDatabase extends DataStore {
     id = id.toLowerCase();
 
     // check invalid values
-    if (!checkValidid(id)) throw new Error('Invalid id');
+    if (!checkValidId(id)) throw new Error('Invalid id');
     if (!checkValidEmail(email)) throw new Error('Invalid email');
 
     // Check exist user id
