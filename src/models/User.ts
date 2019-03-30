@@ -4,6 +4,7 @@ import DataStore from './index';
 import { UserTable } from '@/interfaces';
 import { createToken } from '@/controllers/auth';
 
+import { checkEmptyItems } from '@/lib/utils';
 import { checkValidid, checkValidEmail } from '@/lib/utils/user';
 
 class UserDatabase extends DataStore {
@@ -16,13 +17,14 @@ class UserDatabase extends DataStore {
   }
 
   async signup({ id, email, username, password }: UserTable) {
+    // check empty values
+    checkEmptyItems({ id, username, password, email });
+
     id = id.toLowerCase();
 
-    // check valid values
-    if (!id || !checkValidid(id)) throw new Error('Invalid id');
-    if (!username) throw new Error('Invalid username');
-    if (!password) throw new Error('Invalid password');
-    if (!email || !checkValidEmail(email)) throw new Error('Invalid email');
+    // check invalid values
+    if (!checkValidid(id)) throw new Error('Invalid id');
+    if (!checkValidEmail(email)) throw new Error('Invalid email');
 
     // Check exist user id
     const { entities: existId } = await this.find([{ key: 'id', op: '=', value: id }]);

@@ -16,37 +16,48 @@ describe('GraphQL Mutation', function() {
     });
 
     it('already id', async function() {
-      const message = await Mutation.signup(null, { id: 'tester', username: '1', email: '1@gmail.com', password: '1' }).catch(err => err.message);
+      const message = await Mutation.signup(null, { id: 'tester', username: 'notexist', email: 'notexist@gmail.com', password: 'notexist' }).catch(
+        err => err.message
+      );
       assert.equal(message, 'Exist user id');
     });
 
     it('already email', async function() {
-      const message = await Mutation.signup(null, { id: '1', username: '1', email: 'tester@gmail.com', password: '1' }).catch(err => err.message);
+      const message = await Mutation.signup(null, { id: 'notexist', username: 'notexist', email: 'tester@gmail.com', password: 'notexist' }).catch(
+        err => err.message
+      );
       assert.equal(message, 'Exist user email');
     });
 
     it('empty id', async function() {
-      const message = await Mutation.signup(null, { username: '1', email: '1@gmail.com', password: '1' }).catch(err => err.message);
-      assert.equal(message, 'Invalid id');
+      const message = await Mutation.signup(null, { username: 'notexist', email: 'notexist@gmail.com', password: 'notexist' }).catch(err => err.message);
+      assert.equal(message, 'Empty id');
     });
 
     it('empty username', async function() {
-      const message = await Mutation.signup(null, { id: '1', email: '1@gmail.com', password: '1' }).catch(err => err.message);
-      assert.equal(message, 'Invalid username');
+      const message = await Mutation.signup(null, { id: 'notexist', email: '1@gmail.com', password: 'notexist' }).catch(err => err.message);
+      assert.equal(message, 'Empty username');
     });
 
     it('empty password', async function() {
-      const message = await Mutation.signup(null, { id: 'tester', username: '1', email: '1@gmail.com' }).catch(err => err.message);
-      assert.equal(message, 'Invalid password');
+      const message = await Mutation.signup(null, { id: 'tester', username: 'notexist', email: '1@gmail.com' }).catch(err => err.message);
+      assert.equal(message, 'Empty password');
     });
 
     it('empty email', async function() {
-      const message = await Mutation.signup(null, { id: 'tester', username: '1', password: '1' }).catch(err => err.message);
-      assert.equal(message, 'Invalid email');
+      const message = await Mutation.signup(null, { id: 'tester', username: 'notexist', password: 'notexist' }).catch(err => err.message);
+      assert.equal(message, 'Empty email');
+    });
+
+    it('invalid id', async function() {
+      const message = await Mutation.signup(null, { id: 'test@id', username: 'notexist', email: 'notexist@gmail.com', password: 'notexist' }).catch(
+        err => err.message
+      );
+      assert.equal(message, 'Invalid id');
     });
 
     it('Invalid email', async function() {
-      const message = await Mutation.signup(null, { id: '1', username: '1', email: 'test', password: '1' }).catch(err => err.message);
+      const message = await Mutation.signup(null, { id: 'notexist', username: 'notexist', email: 'test', password: 'notexist' }).catch(err => err.message);
       assert.equal(message, 'Invalid email');
     });
   });
