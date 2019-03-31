@@ -6,6 +6,7 @@ const Mutation = require('./Mutation');
 describe('GraphQL Mutation', function() {
   before(async () => {
     await Mutation.signup(null, { id: 'tester', username: 'tester', email: 'tester@gmail.com', password: 'test1234' });
+    await Mutation.signup(null, { id: 'me', username: 'me', email: 'me@gmail.com', password: 'test1234' });
   });
 
   describe('signup', function() {
@@ -64,6 +65,13 @@ describe('GraphQL Mutation', function() {
       it('email', async function() {
         const message = await Mutation.signup(null, { id: 'notexist', username: 'notexist', email: 'test', password: 'notexist' }).catch(err => err.message);
         assert.equal(message, 'Invalid email');
+      });
+
+      it('password', async function() {
+        const message = await Mutation.signup(null, { id: 'notexist', username: 'notexist', email: 'notexist@gmail.com', password: '1234' }).catch(
+          err => err.message
+        );
+        assert.equal(message, 'Invalid password');
       });
     });
   });
@@ -129,4 +137,6 @@ describe('GraphQL Mutation', function() {
       });
     });
   });
+
+  describe('updateUserInfo', function() {});
 });

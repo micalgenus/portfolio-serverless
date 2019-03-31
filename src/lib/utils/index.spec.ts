@@ -59,18 +59,23 @@ describe('Utils library', function() {
         it('Only number', function() {
           assert.equal(User.checkValidId('1234'), false);
         });
+
         it('Start character is number', function() {
           assert.equal(User.checkValidId('1234abc'), false);
         });
+
         it('Contain character "@"', function() {
           assert.equal(User.checkValidId('abcd@efgh'), false);
         });
+
         it('Contain character " "(white space)', function() {
           assert.equal(User.checkValidId('asdf asdf'), false);
         });
+
         it('Contain character double quote', function() {
           assert.equal(User.checkValidId('test"test'), false);
         });
+
         it('Contain special characters', function() {
           assert.equal(User.checkValidId('a!@#$%^&*()_+'), false);
         });
@@ -82,9 +87,11 @@ describe('Utils library', function() {
         it('Only number', function() {
           assert.equal(User.checkValidEmail('123@asdf.com'), true);
         });
+
         it('Only alphabet', function() {
           assert.equal(User.checkValidEmail('test@gmail.com'), true);
         });
+
         it('Contain dot character', function() {
           assert.equal(User.checkValidEmail('test.test@gmail.com'), true);
         });
@@ -94,17 +101,35 @@ describe('Utils library', function() {
         it('Without @', function() {
           assert.equal(User.checkValidEmail('test'), false);
         });
+
         it('Without domain', function() {
           assert.equal(User.checkValidEmail('test@'), false);
         });
+
         it('Without sub domain', function() {
           assert.equal(User.checkValidEmail('test@asdf'), false);
         });
+
         it('Multiple @', function() {
           assert.equal(User.checkValidEmail('abc@a@sdf.com'), false);
         });
+
         it('Contain special characters', function() {
           assert.equal(User.checkValidEmail('#$%^&*()@sdf.com'), false);
+        });
+      });
+    });
+
+    describe('checkValidPassword', function() {
+      describe('Valid', function() {
+        it('Password is strong', function() {
+          assert.equal(User.checkValidPassword('test1234!@#$'), true);
+        });
+      });
+
+      describe('Invalid', function() {
+        it('Short password', function() {
+          assert.equal(User.checkValidPassword('1234'), false);
         });
       });
     });

@@ -12,7 +12,7 @@ describe('GraphQL Query', function() {
   let user = null;
 
   before(async () => {
-    token = await Mutation.login(null, { user: 'tester', password: 'test1234' });
+    token = await Mutation.login(null, { user: 'me', password: 'test1234' });
     user = await verify(token);
   });
 
@@ -20,7 +20,7 @@ describe('GraphQL Query', function() {
     describe('Valid', function() {
       it('Get user info', async function() {
         const userInfo = await Query.me(null, null, { user });
-        assert.deepEqual(userInfo, { email: 'tester@gmail.com', id: 'tester', username: 'tester' });
+        assert.deepEqual(userInfo, { email: 'me@gmail.com', id: 'me', username: 'me' });
       });
     });
 

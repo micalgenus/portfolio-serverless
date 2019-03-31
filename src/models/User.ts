@@ -5,7 +5,7 @@ import { UserTable } from '@/interfaces';
 import { createToken } from '@/controllers/auth';
 
 import { checkEmptyItems } from '@/lib/utils';
-import { checkValidId, checkValidEmail } from '@/lib/utils/user';
+import { checkValidId, checkValidEmail, checkValidPassword } from '@/lib/utils/user';
 
 class UserDatabase extends DataStore {
   constructor() {
@@ -25,6 +25,7 @@ class UserDatabase extends DataStore {
     // check invalid values
     if (!checkValidId(id)) throw new Error('Invalid id');
     if (!checkValidEmail(email)) throw new Error('Invalid email');
+    if (!checkValidPassword(password)) throw new Error('Invalid password');
 
     // Check exist user id
     const { entities: existId } = await this.find([{ key: 'id', op: '=', value: id }]);
