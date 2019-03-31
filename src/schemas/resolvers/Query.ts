@@ -6,4 +6,9 @@ module.exports = {
     const { _id, password, createdAt, updatedAt, ...userInfo } = await UserModel.getUserInfoByPk(user._id);
     return userInfo;
   },
+
+  async getUserInfo(_, { id }) {
+    const { _id, password, createdAt, updatedAt, ...userInfo } = await UserModel.getUserInfoById(id);
+    return userInfo;
+  },
 };

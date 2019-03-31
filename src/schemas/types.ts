@@ -1,6 +1,5 @@
 export const User = `
   type User {
-    _id: Int
     id: String
     username: String
     email: String
@@ -12,6 +11,7 @@ export const User = `
 export const Query = `
   type Query {
     me: User
+    getUserInfo (id: String!): User
   }
 `;
 

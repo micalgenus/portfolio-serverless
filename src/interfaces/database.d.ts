@@ -1,7 +1,7 @@
 import { Operator } from '@google-cloud/datastore/build/src/query';
 
 export interface DatabaseFindItem {
-  entities: object[];
+  entities: any[];
   hasMore: string | false;
 }
 

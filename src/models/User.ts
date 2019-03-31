@@ -83,6 +83,15 @@ class UserDatabase extends DataStore {
     return userinfo;
   }
 
+  async getUserInfoById(id) {
+    if (!id) throw new Error('Required id');
+
+    const { entities: existUser } = await this.find([{ key: 'id', op: '=', value: id }]);
+    if (!existUser.length) throw new Error('User not found');
+
+    return existUser[0] || {};
+  }
+
   async updateUserInfo(id, username, email, github, linkedin) {
     if (!id) throw new Error('Required id');
 

@@ -8,15 +8,15 @@ const Mutation = require('./Mutation');
 require('./Mutation.spec');
 
 describe('GraphQL Query', function() {
-  let token = null;
-  let user = null;
-
-  before(async () => {
-    token = await Mutation.login(null, { user: 'me', password: 'test1234' });
-    user = await verify(token);
-  });
-
   describe('me', function() {
+    let token = null;
+    let user = null;
+
+    before(async () => {
+      token = await Mutation.login(null, { user: 'me', password: 'test1234' });
+      user = await verify(token);
+    });
+
     describe('Success', function() {
       it('Get user info', async function() {
         const userInfo = await Query.me(null, null, { user });
@@ -37,6 +37,27 @@ describe('GraphQL Query', function() {
 
       it('Primary key is empty in user', async function() {
         const message = await Query.me(null, null, { user: {} }).catch(err => err.message);
+        assert.equal(message, 'Required id');
+      });
+    });
+  });
+
+  describe('getUserInfo', function() {
+    describe('Success', function() {
+      it('Get user info', async function() {
+        const userInfo = await Query.getUserInfo(null, { id: 'me' });
+        assert.deepEqual(userInfo, { email: 'me@gmail.com', id: 'me', username: 'me' });
+      });
+    });
+
+    describe('Invalid', function() {
+      it('Get not exist user info', async function() {
+        const message = await Query.getUserInfo(null, { id: 'notexist' }).catch(err => err.message);
+        assert.equal(message, 'User not found');
+      });
+
+      it('Get not exist user info', async function() {
+        const message = await Query.getUserInfo(null, { id: '' }).catch(err => err.message);
         assert.equal(message, 'Required id');
       });
     });
