@@ -42,7 +42,7 @@ class UserDatabase extends DataStore {
   }
 
   static async compareUserPasswordAndLogin(user, password = null) {
-    if (!password) throw new Error('A password is required.');
+    if (!password) throw new Error('A password is required');
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new Error('Incorrect password');
 
@@ -81,6 +81,34 @@ class UserDatabase extends DataStore {
     if (!userinfo) throw new Error('User not found');
 
     return userinfo;
+  }
+
+  async updateUserInfo(id, username, email, github, linkedin) {
+    if (!id) throw new Error('Required id');
+
+    // Empty check
+    if (!username && !email && !github && !linkedin) throw new Error('No information to update');
+
+    // Get old user information
+    const userInfo = await this.read(id);
+    if (!userInfo) throw new Error('User not found');
+
+    // Same data as before
+    if (username === userInfo.username && email === userInfo.email && github === userInfo.github && linkedin === userInfo.linkedin)
+      throw new Error('No information to update');
+
+    // Check exist user email
+    if (email !== userInfo.email) {
+      const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: email }]);
+      if (existEmail.length) throw new Error('Exist user email');
+    }
+
+    // Update user information
+    const updateData = { ...userInfo, username, email, github, linkedin };
+    const updateInfo = await this.update(id, updateData);
+    if (!updateInfo) throw new Error('Fail user data update');
+
+    return updateInfo;
   }
 }
 
