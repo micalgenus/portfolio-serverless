@@ -17,24 +17,28 @@ describe('GraphQL Query', function() {
   });
 
   describe('me', function() {
-    it('get user info', async function() {
-      const userInfo = await Query.me(null, null, { user });
-      assert.deepEqual(userInfo, { email: 'tester@gmail.com', id: 'tester', username: 'tester' });
+    describe('Valid', function() {
+      it('Get user info', async function() {
+        const userInfo = await Query.me(null, null, { user });
+        assert.deepEqual(userInfo, { email: 'tester@gmail.com', id: 'tester', username: 'tester' });
+      });
     });
 
-    it('get not exist user info', async function() {
-      const message = await Query.me(null, null, { user: { _id: -1 } }).catch(err => err.message);
-      assert.equal(message, 'User not found');
-    });
+    describe('Invalid', function() {
+      it('Get not exist user info', async function() {
+        const message = await Query.me(null, null, { user: { _id: -1 } }).catch(err => err.message);
+        assert.equal(message, 'User not found');
+      });
 
-    it('not exist user object', async function() {
-      const message = await Query.me(null, null, { user: undefined }).catch(err => err.message);
-      assert.equal(message, 'You are not authenticated!');
-    });
+      it('User object is empty', async function() {
+        const message = await Query.me(null, null, { user: undefined }).catch(err => err.message);
+        assert.equal(message, 'You are not authenticated!');
+      });
 
-    it('not contain primary key in user', async function() {
-      const message = await Query.me(null, null, { user: {} }).catch(err => err.message);
-      assert.equal(message, 'Required id');
+      it('Primary key is empty in user', async function() {
+        const message = await Query.me(null, null, { user: {} }).catch(err => err.message);
+        assert.equal(message, 'Required id');
+      });
     });
   });
 });
