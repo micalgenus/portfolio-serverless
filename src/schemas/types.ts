@@ -8,6 +8,7 @@ export const User = gql`
     email: String
     github: String
     linkedin: String
+    description: String
   }
 `;
 
@@ -25,6 +26,6 @@ export const Mutation = gql`
     login argument user = (id or email)
     """
     login(user: String, id: String, email: String, password: String!): String
-    updateUserInfo(username: String, email: String, github: String, linkedin: String): User
+    updateUserInfo(username: String, email: String, github: String, linkedin: String, description: String): User
   }
 `;

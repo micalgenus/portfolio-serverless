@@ -12,8 +12,8 @@ module.exports = {
     throw new Error('user, id or email is required');
   },
 
-  updateUserInfo: async (_, { username, email, github, linkedin }, { user }) => {
+  updateUserInfo: async (_, { username, email, github, linkedin, description }, { user }) => {
     if (!user) throw new Error('You are not authenticated!');
-    return UserModel.updateUserInfo(user._id, username, email, github, linkedin);
+    return UserModel.updateUserInfo(user._id, username, email, github, linkedin, description);
   },
 };

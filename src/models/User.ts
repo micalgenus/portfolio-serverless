@@ -92,11 +92,12 @@ class UserDatabase extends DataStore {
     return existUser[0] || {};
   }
 
-  async updateUserInfo(id, username, email, github, linkedin) {
+  async updateUserInfo(id, username, email, github, linkedin, description) {
     if (!id) throw new Error('Required id');
 
     // Empty check
-    if (username === undefined && email === undefined && github === undefined && linkedin === undefined) throw new Error('No information to update');
+    if (username === undefined && email === undefined && github === undefined && linkedin === undefined && description === undefined)
+      throw new Error('No information to update');
     if (username === '') throw new Error('Username must be required');
 
     // Get old user information
@@ -104,7 +105,13 @@ class UserDatabase extends DataStore {
     if (!userInfo) throw new Error('User not found');
 
     // Same data as before
-    if (username === userInfo.username && email === userInfo.email && github === userInfo.github && linkedin === userInfo.linkedin)
+    if (
+      username === userInfo.username &&
+      email === userInfo.email &&
+      github === userInfo.github &&
+      linkedin === userInfo.linkedin &&
+      description === userInfo.description
+    )
       throw new Error('No information to update');
 
     if (email !== userInfo.email) {
@@ -123,6 +130,7 @@ class UserDatabase extends DataStore {
       email: email === undefined ? userInfo.email : email,
       github: github === undefined ? userInfo.github : github,
       linkedin: linkedin === undefined ? userInfo.linkedin : linkedin,
+      description: description === undefined ? userInfo.description : description,
     };
 
     const updateInfo = await this.update(id, updateData);

@@ -150,14 +150,20 @@ describe('GraphQL Mutation', function() {
         user = await verify(token);
       });
 
-      it('Update email', async function() {
-        const { id, email, username, ...rest } = await Mutation.updateUserInfo(null, { email: 'updated@gmail.com' }, { user: user }).catch(err => err.message);
-        assert.deepEqual({ id, email, username }, { id: 'update', email: 'updated@gmail.com', username: 'update' });
+      it('Update', async function() {
+        const { id, email, username, description, ...rest } = await Mutation.updateUserInfo(
+          null,
+          { email: 'updated@gmail.com', description: 'description' },
+          { user: user }
+        ).catch(err => err.message);
+        assert.deepEqual({ id, email, username, description }, { id: 'update', email: 'updated@gmail.com', username: 'update', description: 'description' });
       });
 
       it('Update to empty value', async function() {
-        const { id, email, username, ...rest } = await Mutation.updateUserInfo(null, { email: '' }, { user: user }).catch(err => err.message);
-        assert.deepEqual({ id, email, username }, { id: 'update', email: '', username: 'update' });
+        const { id, email, username, description, ...rest } = await Mutation.updateUserInfo(null, { email: '', description: '' }, { user: user }).catch(
+          err => err.message
+        );
+        assert.deepEqual({ id, email, username, description }, { id: 'update', email: '', username: 'update', description: '' });
       });
     });
 
