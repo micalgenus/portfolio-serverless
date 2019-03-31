@@ -4,6 +4,8 @@ export const User = `
     id: String
     username: String
     email: String
+    github: String
+    linkedin: String
   }
 `;
 

@@ -49,5 +49,8 @@ export interface UserTable extends TableTemplate {
   email: string;
   username: string;
   password: string;
+  github?: string;
+  linkedin?: string;
+
   isAdmin?: boolean;
 }
