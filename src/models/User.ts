@@ -97,6 +97,7 @@ class UserDatabase extends DataStore {
 
     // Empty check
     if (username === undefined && email === undefined && github === undefined && linkedin === undefined) throw new Error('No information to update');
+    if (username === '') throw new Error('Username must be required');
 
     // Get old user information
     const userInfo = await this.read(id);

@@ -169,25 +169,31 @@ describe('GraphQL Mutation', function() {
         token = await Mutation.login(null, { user: 'readonly', password: 'test1234' });
         user = await verify(token);
       });
+      describe('Empty items', function() {
+        it('User object', async function() {
+          const message = await Mutation.updateUserInfo(null, {}, { user: undefined }).catch(err => err.message);
+          assert.equal(message, 'You are not authenticated!');
+        });
 
-      it('User object is empty', async function() {
-        const message = await Mutation.updateUserInfo(null, {}, { user: undefined }).catch(err => err.message);
-        assert.equal(message, 'You are not authenticated!');
-      });
+        it('Information', async function() {
+          const message = await Mutation.updateUserInfo(null, {}, { user }).catch(err => err.message);
+          assert.equal(message, 'No information to update');
+        });
 
-      it('Primary key is empty in user', async function() {
-        const message = await Mutation.updateUserInfo(null, {}, { user: {} }).catch(err => err.message);
-        assert.equal(message, 'Required id');
+        it('username', async function() {
+          const message = await Mutation.updateUserInfo(null, { username: '' }, { user }).catch(err => err.message);
+          assert.equal(message, 'Username must be required');
+        });
+
+        it('Primary key', async function() {
+          const message = await Mutation.updateUserInfo(null, {}, { user: {} }).catch(err => err.message);
+          assert.equal(message, 'Required id');
+        });
       });
 
       it('Get not exist user info', async function() {
         const message = await Mutation.updateUserInfo(null, { username: 'readonly' }, { user: { _id: -1 } }).catch(err => err.message);
         assert.equal(message, 'User not found');
-      });
-
-      it('Empty update information', async function() {
-        const message = await Mutation.updateUserInfo(null, {}, { user }).catch(err => err.message);
-        assert.equal(message, 'No information to update');
       });
 
       it('Already exist email', async function() {
