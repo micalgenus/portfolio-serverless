@@ -151,10 +151,13 @@ describe('GraphQL Mutation', function() {
       });
 
       it('Update email', async function() {
-        const { id, email, username, ...rest } = await Mutation.updateUserInfo(null, { username: 'update', email: 'updated@gmail.com' }, { user: user }).catch(
-          err => err.message
-        );
+        const { id, email, username, ...rest } = await Mutation.updateUserInfo(null, { email: 'updated@gmail.com' }, { user: user }).catch(err => err.message);
         assert.deepEqual({ id, email, username }, { id: 'update', email: 'updated@gmail.com', username: 'update' });
+      });
+
+      it('Update to empty value', async function() {
+        const { id, email, username, ...rest } = await Mutation.updateUserInfo(null, { email: '' }, { user: user }).catch(err => err.message);
+        assert.deepEqual({ id, email, username }, { id: 'update', email: '', username: 'update' });
       });
     });
 
@@ -195,6 +198,11 @@ describe('GraphQL Mutation', function() {
       it('Same data as before', async function() {
         const message = await Mutation.updateUserInfo(null, { username: 'readonly', email: 'readonly@gmail.com' }, { user }).catch(err => err.message);
         assert.equal(message, 'No information to update');
+      });
+
+      it('Invalid email', async function() {
+        const message = await Mutation.updateUserInfo(null, { username: 'readonly', email: 'read@only@gmail.com' }, { user }).catch(err => err.message);
+        assert.equal(message, 'Invalid email');
       });
     });
   });

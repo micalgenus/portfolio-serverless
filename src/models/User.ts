@@ -87,7 +87,7 @@ class UserDatabase extends DataStore {
     if (!id) throw new Error('Required id');
 
     // Empty check
-    if (!username && !email && !github && !linkedin) throw new Error('No information to update');
+    if (username === undefined && email === undefined && github === undefined && linkedin === undefined) throw new Error('No information to update');
 
     // Get old user information
     const userInfo = await this.read(id);
@@ -97,14 +97,24 @@ class UserDatabase extends DataStore {
     if (username === userInfo.username && email === userInfo.email && github === userInfo.github && linkedin === userInfo.linkedin)
       throw new Error('No information to update');
 
-    // Check exist user email
     if (email !== userInfo.email) {
+      // Check exist user email
       const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: email }]);
       if (existEmail.length) throw new Error('Exist user email');
+
+      // Check valid email
+      if (email && !checkValidEmail(email)) throw new Error('Invalid email');
     }
 
     // Update user information
-    const updateData = { ...userInfo, username, email, github, linkedin };
+    const updateData = {
+      ...userInfo,
+      username: username === undefined ? userInfo.username : username,
+      email: email === undefined ? userInfo.email : email,
+      github: github === undefined ? userInfo.github : github,
+      linkedin: linkedin === undefined ? userInfo.linkedin : linkedin,
+    };
+
     const updateInfo = await this.update(id, updateData);
     if (!updateInfo) throw new Error('Fail user data update');
 
