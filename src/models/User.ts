@@ -130,7 +130,7 @@ class UserDatabase extends DataStore {
       email: email === undefined ? userInfo.email : email,
       github: github === undefined ? userInfo.github : github,
       linkedin: linkedin === undefined ? userInfo.linkedin : linkedin,
-      description: description === undefined ? userInfo.description : description,
+      description: description === undefined ? userInfo.description.trim() : description.trim(),
     };
 
     const updateInfo = await this.update(id, updateData);

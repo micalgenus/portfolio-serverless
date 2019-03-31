@@ -43,6 +43,10 @@ interface TableTemplate {
  * @member email
  * @member username
  * @member password
+ * @member github
+ * @member linkedin
+ * @member description
+ * @member isAdmin
  */
 export interface UserTable extends TableTemplate {
   id: string;
