@@ -6,6 +6,17 @@ import * as User from './user';
 describe('Utils library', function() {
   describe('index', function() {
     describe('checkEmptyItems', function() {
+      describe('Success', function() {
+        it('Not empty data', function() {
+          try {
+            utils.checkEmptyItems({ test1: 1, test2: 2 });
+            assert.equal(true, true);
+          } catch (err) {
+            assert.equal('throw error', err);
+          }
+        });
+      });
+
       describe('Empty items', function() {
         it('Undefined data', function() {
           try {
@@ -25,23 +36,12 @@ describe('Utils library', function() {
           }
         });
       });
-
-      describe('Valid Data', function() {
-        it('Not empty data', function() {
-          try {
-            utils.checkEmptyItems({ test1: 1, test2: 2 });
-            assert.equal(true, true);
-          } catch (err) {
-            assert.equal('throw error', err);
-          }
-        });
-      });
     });
   });
 
   describe('user', function() {
     describe('checkValidId', function() {
-      describe('Valid ID', function() {
+      describe('Success', function() {
         it('Short id', function() {
           assert.equal(User.checkValidId('a'), true);
         });
@@ -83,7 +83,7 @@ describe('Utils library', function() {
     });
 
     describe('checkValidEmail', function() {
-      describe('Valid', function() {
+      describe('Success', function() {
         it('Only number', function() {
           assert.equal(User.checkValidEmail('123@asdf.com'), true);
         });
@@ -121,7 +121,7 @@ describe('Utils library', function() {
     });
 
     describe('checkValidPassword', function() {
-      describe('Valid', function() {
+      describe('Success', function() {
         it('Password is strong', function() {
           assert.equal(User.checkValidPassword('test1234!@#$'), true);
         });

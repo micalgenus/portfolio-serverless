@@ -6,7 +6,9 @@ const Mutation = require('./Mutation');
 describe('GraphQL Mutation', function() {
   before(async () => {
     await Mutation.signup(null, { id: 'tester', username: 'tester', email: 'tester@gmail.com', password: 'test1234' });
+    await Mutation.signup(null, { id: 'readonly', username: 'readonly', email: 'readonly@gmail.com', password: 'test1234' });
     await Mutation.signup(null, { id: 'me', username: 'me', email: 'me@gmail.com', password: 'test1234' });
+    await Mutation.signup(null, { id: 'update', username: 'update', email: 'update@gmail.com', password: 'test1234' });
   });
 
   describe('signup', function() {
@@ -102,12 +104,12 @@ describe('GraphQL Mutation', function() {
     describe('Empty items', function() {
       it('Arguments', async function() {
         const message = await Mutation.login(null, { password: 'test1234' }).catch(err => err.message);
-        assert.equal(message, 'user, id or email is required.');
+        assert.equal(message, 'user, id or email is required');
       });
 
       it('password', async function() {
         const message = await Mutation.login(null, { id: 'tester' }).catch(err => err.message);
-        assert.equal(message, 'A password is required.');
+        assert.equal(message, 'A password is required');
       });
     });
 
@@ -138,5 +140,62 @@ describe('GraphQL Mutation', function() {
     });
   });
 
-  describe('updateUserInfo', function() {});
+  describe('updateUserInfo', function() {
+    describe('Success', function() {
+      let token = null;
+      let user = null;
+
+      before(async () => {
+        token = await Mutation.login(null, { user: 'update', password: 'test1234' });
+        user = await verify(token);
+      });
+
+      it('Update email', async function() {
+        const { id, email, username, ...rest } = await Mutation.updateUserInfo(null, { username: 'update', email: 'updated@gmail.com' }, { user: user }).catch(
+          err => err.message
+        );
+        assert.deepEqual({ id, email, username }, { id: 'update', email: 'updated@gmail.com', username: 'update' });
+      });
+    });
+
+    describe('Invalid', function() {
+      let token = null;
+      let user = null;
+
+      before(async () => {
+        token = await Mutation.login(null, { user: 'readonly', password: 'test1234' });
+        user = await verify(token);
+      });
+
+      it('User object is empty', async function() {
+        const message = await Mutation.updateUserInfo(null, {}, { user: undefined }).catch(err => err.message);
+        assert.equal(message, 'You are not authenticated!');
+      });
+
+      it('Primary key is empty in user', async function() {
+        const message = await Mutation.updateUserInfo(null, {}, { user: {} }).catch(err => err.message);
+        assert.equal(message, 'Required id');
+      });
+
+      it('Get not exist user info', async function() {
+        const message = await Mutation.updateUserInfo(null, { username: 'readonly' }, { user: { _id: -1 } }).catch(err => err.message);
+        assert.equal(message, 'User not found');
+      });
+
+      it('Empty update information', async function() {
+        const message = await Mutation.updateUserInfo(null, {}, { user }).catch(err => err.message);
+        assert.equal(message, 'No information to update');
+      });
+
+      it('Already exist email', async function() {
+        const message = await Mutation.updateUserInfo(null, { email: 'me@gmail.com' }, { user }).catch(err => err.message);
+        assert.equal(message, 'Exist user email');
+      });
+
+      it('Same data as before', async function() {
+        const message = await Mutation.updateUserInfo(null, { username: 'readonly', email: 'readonly@gmail.com' }, { user }).catch(err => err.message);
+        assert.equal(message, 'No information to update');
+      });
+    });
+  });
 });

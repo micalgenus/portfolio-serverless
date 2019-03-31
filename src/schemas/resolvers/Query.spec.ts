@@ -17,7 +17,7 @@ describe('GraphQL Query', function() {
   });
 
   describe('me', function() {
-    describe('Valid', function() {
+    describe('Success', function() {
       it('Get user info', async function() {
         const userInfo = await Query.me(null, null, { user });
         assert.deepEqual(userInfo, { email: 'me@gmail.com', id: 'me', username: 'me' });
