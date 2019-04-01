@@ -59,3 +59,8 @@ export interface UserTable extends TableTemplate {
 
   isAdmin?: boolean;
 }
+
+export interface CategoryTable extends TableTemplate {
+  user: string;
+  name?: string;
+}
