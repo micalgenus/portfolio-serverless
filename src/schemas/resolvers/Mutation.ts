@@ -1,4 +1,5 @@
 import UserModel from '@/models/User';
+import CategoryModel from '@/models/Category';
 
 module.exports = {
   // Handle user signup
@@ -15,5 +16,10 @@ module.exports = {
   updateUserInfo: async (_, { username, email, github, linkedin, description }, { user }) => {
     if (!user) throw new Error('You are not authenticated!');
     return UserModel.updateUserInfo(user._id, username, email, github, linkedin, description);
+  },
+
+  createCategory: async (_, __, { user }) => {
+    if (!user) throw new Error('You are not authenticated!');
+    return CategoryModel.createNewCategory(user.id);
   },
 };

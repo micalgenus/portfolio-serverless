@@ -21,11 +21,15 @@ export const Query = gql`
 
 export const Mutation = gql`
   type Mutation {
+    """
+    auth mutation
+    """
     signup(id: String!, username: String!, email: String!, password: String!): String
-    """
-    login argument user = (id or email)
-    """
     login(user: String, id: String, email: String, password: String!): String
     updateUserInfo(username: String, email: String, github: String, linkedin: String, description: String): User
+    """
+    Category mutation
+    """
+    createCategory: String!
   }
 `;

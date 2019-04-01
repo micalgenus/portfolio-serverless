@@ -218,4 +218,33 @@ describe('GraphQL Mutation', function() {
       });
     });
   });
+
+  describe('createCategory', function() {
+    describe('Success', function() {
+      let token = null;
+      let user = null;
+
+      before(async () => {
+        token = await Mutation.login(null, { user: 'tester', password: 'test1234' });
+        user = await verify(token);
+      });
+
+      it('Create portfolio', async function() {
+        const id = await Mutation.createCategory(null, null, { user });
+        assert.equal(!!id, true);
+      });
+    });
+
+    describe('Invalid', function() {
+      it('Token not exist', async function() {
+        const message = await Mutation.createCategory(null, null, {}).catch(err => err.message);
+        assert.equal(message, 'You are not authenticated!');
+      });
+
+      it('Invalid user', async function() {
+        const message = await Mutation.createCategory(null, null, { user: { id: 'notexist' } }).catch(err => err.message);
+        assert.equal(message, 'User not found');
+      });
+    });
+  });
 });
