@@ -19,16 +19,22 @@ plugins:
 # package should be excluded (and not the whole node_modules directory)
 package:
   exclude:
+    - coverage/**
+    - .nyc_output/**
     - node_modules/**
-    - .gitignore
+    - src/**
     - .git/**
+    - .gitignore
+    - .codeclimate.yml
     - .travis.yml
     - .babelrc
     - .editorconfig
     - .prettierrc
+    - cc-test-reporter
     - tsconfig.json
     - keyfile.json
-    - keyfile.json.enc
+    - travis-secret.tar
+    - travis-secret.tar.enc
 
 functions:
   graphql:
