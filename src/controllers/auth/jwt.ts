@@ -6,7 +6,7 @@ import { RSA } from '@/config';
 const { PRIVATE_KEY, PUBLIC_KEY } = RSA;
 const JWT_PREFIX = 'bearer';
 
-const ignoreJwtErrors = ['TokenExpiredError', 'JsonWebTokenError'];
+const ignoreJwtErrors = ['TokenExpiredError'];
 
 // isCanEncryptAndDecryptJwtWithRsa is singleton pattern (return boolean)
 const isCanEncryptAndDecryptJwtWithRsa = (() => {
@@ -49,7 +49,7 @@ const decrypyJwtWithRSA = token => {
 
 const encryptJwt = isCanEncryptAndDecryptJwtWithRsa ? encryptJwtWithRSA : token => token;
 const decryptJwt = isCanEncryptAndDecryptJwtWithRsa ? decrypyJwtWithRSA : token => token;
-const JWT_KEY = process.env.PRIVATE_KEY || Math.random().toString();
+const JWT_KEY = PRIVATE_KEY || Math.random().toString();
 
 export const createToken = async ({ iat = null, exp = null, ...data }: any) => {
   return [JWT_PREFIX, encryptJwt(jwt.sign({ ...data }, JWT_KEY, { expiresIn: '1d' }))].join(' ');

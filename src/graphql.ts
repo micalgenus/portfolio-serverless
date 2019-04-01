@@ -17,6 +17,6 @@ const server = new ApolloServer({
   context: ({ req, res }: AuthorizationExpressContext) => ({ user: req.user }),
 });
 
-server.applyMiddleware({ app, path: '/' });
+server.applyMiddleware({ app, path: '/', cors: { origin: true, credentials: true } });
 
 export default app;
