@@ -9,6 +9,7 @@ describe('GraphQL Mutation', function() {
     await Mutation.signup(null, { id: 'readonly', username: 'readonly', email: 'readonly@gmail.com', password: 'test1234' });
     await Mutation.signup(null, { id: 'me', username: 'me', email: 'me@gmail.com', password: 'test1234' });
     await Mutation.signup(null, { id: 'update', username: 'update', email: 'update@gmail.com', password: 'test1234' });
+    await Mutation.signup(null, { id: 'category', username: 'category', email: 'category@gmail.com', password: 'test1234' });
   });
 
   describe('signup', function() {

@@ -19,6 +19,18 @@ class CategoryDatabase extends DataStore<CategoryTable> {
 
     return _id;
   }
+
+  async getCategoryByUserId(user: string, filter?: string[]) {
+    if (!user) throw new Error('Required user');
+
+    const existUser = await UserModel.getUserInfoById(user);
+    if (!existUser) throw new Error('User not found');
+
+    let { entities: categories } = await this.find([{ key: 'user', op: '=', value: user }]);
+    if (filter) categories = categories.filter(p => filter.includes(p._id.toString()));
+
+    return categories || [];
+  }
 }
 
 export default new CategoryDatabase();

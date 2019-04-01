@@ -1,6 +1,14 @@
 // import gql from 'graphql-tag';
 const gql = (query: TemplateStringsArray) => query.join('');
 
+export const Category = gql`
+  type Category {
+    _id: String
+    user: String
+    name: String
+  }
+`;
+
 export const User = gql`
   type User {
     id: String
@@ -9,6 +17,7 @@ export const User = gql`
     github: String
     linkedin: String
     description: String
+    categories(filter: [String]): [Category]
   }
 `;
 
