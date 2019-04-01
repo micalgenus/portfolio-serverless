@@ -50,6 +50,9 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
     if (id) key = datastore.key([this.table, parseInt(id, 10)]);
     else key = datastore.key(this.table);
 
+    // Reject the _id member
+    delete data._id;
+
     const entity = {
       key: key,
       data: DataStoreAbstract.toDatastore(data, ['description']),
@@ -158,6 +161,8 @@ class TestDataStoreAbstract implements DatabaseConnector {
   }
 
   async update(id: string, data) {
+    // Reject the _id member
+    delete data._id;
     return new Promise(resolve => this.db.update({ _id: id }, { $set: { ...data } }, () => resolve(this.read(id))));
   }
 
