@@ -1,7 +1,7 @@
 import { Operator } from '@google-cloud/datastore/build/src/query';
 
-export interface DatabaseFindItem {
-  entities: any[];
+export interface DatabaseFindItem<T> {
+  entities: T[];
   hasMore: string | false;
 }
 
@@ -24,13 +24,13 @@ export interface DatabaseFilterItem {
  * @method list
  * @method delete
  */
-export interface DatabaseConnector {
+export interface DatabaseConnector<T> {
   table: string;
-  create: (data: any) => Promise<any>;
-  update: (id: string, data: any) => Promise<any>;
-  read: (id: string) => Promise<any>;
-  find: (filters: DatabaseFilterItem[]) => Promise<DatabaseFindItem>;
-  list: (limit: number, order: string, token: string | Buffer) => Promise<DatabaseFindItem>;
+  create: (data: any) => Promise<T>;
+  update: (id: string, data: any) => Promise<T>;
+  read: (id: string) => Promise<T>;
+  find: (filters: DatabaseFilterItem[]) => Promise<DatabaseFindItem<T>>;
+  list: (limit: number, order: string, token: string | Buffer) => Promise<DatabaseFindItem<T>>;
   delete: (id: string) => Promise<any>;
 }
 

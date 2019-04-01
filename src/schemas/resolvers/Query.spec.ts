@@ -19,7 +19,7 @@ describe('GraphQL Query', function() {
 
     describe('Success', function() {
       it('Get user info', async function() {
-        const userInfo = await Query.me(null, null, { user });
+        const { createdAt, updatedAt, ...userInfo } = await Query.me(null, null, { user });
         assert.deepEqual(userInfo, { email: 'me@gmail.com', id: 'me', username: 'me' });
       });
     });
@@ -45,7 +45,7 @@ describe('GraphQL Query', function() {
   describe('getUserInfo', function() {
     describe('Success', function() {
       it('Get user info', async function() {
-        const userInfo = await Query.getUserInfo(null, { id: 'me' });
+        const { createdAt, updatedAt, ...userInfo } = await Query.getUserInfo(null, { id: 'me' });
         assert.deepEqual(userInfo, { email: 'me@gmail.com', id: 'me', username: 'me' });
       });
     });

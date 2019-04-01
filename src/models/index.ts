@@ -2,19 +2,19 @@ import { Datastore, Query } from '@google-cloud/datastore';
 import { Operator } from '@google-cloud/datastore/build/src/query';
 import TestDatastore from 'nedb';
 
-import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem } from '@/interfaces';
+import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem, TableTemplate } from '@/interfaces';
 
 // export Google Cloud Datastore
 const datastore = new Datastore({ projectId: process.env.GOOGLE_DATASTORE_PROJECT_ID });
 
 // Basic Methods Class
-class DataStoreBasic {
-  static fromDatastore(obj) {
+class DataStoreBasic<T extends TableTemplate> {
+  fromDatastore(obj: T) {
     obj._id = obj[Datastore.KEY].id;
     return obj;
   }
 
-  static toDatastore(obj, nonIndexed) {
+  toDatastore(obj, nonIndexed) {
     nonIndexed = nonIndexed || [];
     const results = [];
     Object.keys(obj).forEach(k => {
@@ -32,7 +32,7 @@ class DataStoreBasic {
 }
 
 // CURD Class
-class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
+class DataStoreAbstract<T extends TableTemplate> extends DataStoreBasic<T> implements DatabaseConnector<T> {
   table: string;
 
   constructor(table: string) {
@@ -41,11 +41,11 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
     this.table = table;
   }
 
-  async create(data) {
+  async create(data: T) {
     return this.update(null, data);
   }
 
-  async update(id: string, data) {
+  async update(id: string, data: T) {
     let key;
     if (id) key = datastore.key([this.table, parseInt(id, 10)]);
     else key = datastore.key(this.table);
@@ -55,10 +55,10 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
 
     const entity = {
       key: key,
-      data: DataStoreAbstract.toDatastore(data, ['description']),
+      data: this.toDatastore(data, ['description']),
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       datastore.save(entity, err => {
         data._id = entity.key.id;
         if (err) return reject(err);
@@ -69,7 +69,7 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
 
   async read(id: string) {
     const key = datastore.key([this.table, parseInt(id, 10)]);
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       datastore.get(key, (err, entity) => {
         if (!err && !entity) {
           err = {
@@ -78,18 +78,18 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
           };
         }
         if (err) return reject(err);
-        else return resolve(DataStoreAbstract.fromDatastore(entity));
+        else return resolve(this.fromDatastore(entity));
       });
     });
   }
 
-  static async runQuery(q: Query) {
-    return new Promise<DatabaseFindItem>((resolve, reject) => {
+  async runQuery(q: Query) {
+    return new Promise<DatabaseFindItem<T>>((resolve, reject) => {
       datastore.runQuery(q, (err, entities, nextQuery) => {
         if (err) return reject(err);
         else {
           const hasMore = nextQuery.moreResults !== Datastore.NO_MORE_RESULTS ? nextQuery.endCursor : false;
-          return resolve({ entities: entities.map(DataStoreAbstract.fromDatastore), hasMore });
+          return resolve({ entities: entities.map(this.fromDatastore), hasMore });
         }
       });
     });
@@ -100,7 +100,7 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
 
     for (const filter of filters) q = q.filter(filter.key, filter.op, filter.value);
 
-    return DataStoreAbstract.runQuery(q);
+    return this.runQuery(q);
   }
 
   async list(limit: number, order: string = 'title', token: string | Buffer) {
@@ -110,7 +110,7 @@ class DataStoreAbstract extends DataStoreBasic implements DatabaseConnector {
       .order(order)
       .start(token);
 
-    return DataStoreAbstract.runQuery(q);
+    return this.runQuery(q);
   }
 
   async delete(id: string) {
@@ -141,7 +141,7 @@ const executeFilterOperation = (value, op: Operator, compare) => {
   }
 };
 
-class TestDataStoreAbstract implements DatabaseConnector {
+class TestDataStoreAbstract<T extends TableTemplate> implements DatabaseConnector<T> {
   table: string;
   db: TestDatastore;
 
@@ -151,8 +151,8 @@ class TestDataStoreAbstract implements DatabaseConnector {
     this.db = new TestDatastore();
   }
 
-  async create(data) {
-    return new Promise((resolve, reject) =>
+  async create(data: T) {
+    return new Promise<T>((resolve, reject) =>
       this.db.insert(data, (err, newDocs) => {
         if (err) return reject(err);
         return resolve(newDocs);
@@ -160,15 +160,15 @@ class TestDataStoreAbstract implements DatabaseConnector {
     );
   }
 
-  async update(id: string, data) {
+  async update(id: string, data: T) {
     // Reject the _id member
     delete data._id;
-    return new Promise(resolve => this.db.update({ _id: id }, { $set: { ...data } }, () => resolve(this.read(id))));
+    return new Promise<T>(resolve => this.db.update({ _id: id }, { $set: { ...data } }, () => resolve(this.read(id))));
   }
 
   async read(id: string) {
-    return new Promise((resolve, reject) =>
-      this.db.findOne({ _id: id }, function(err, doc) {
+    return new Promise<T>((resolve, reject) =>
+      this.db.findOne({ _id: id }, function(err, doc: T) {
         if (err) return reject(err);
         return resolve(doc);
       })
@@ -176,7 +176,7 @@ class TestDataStoreAbstract implements DatabaseConnector {
   }
 
   async find(filters: DatabaseFilterItem[]) {
-    return new Promise<DatabaseFindItem>((resolve, reject) =>
+    return new Promise<DatabaseFindItem<T>>((resolve, reject) =>
       this.db.find(
         {
           $where: function() {
@@ -196,7 +196,7 @@ class TestDataStoreAbstract implements DatabaseConnector {
   }
 
   async list(limit: number, order: string, token: string | Buffer) {
-    return new Promise<DatabaseFindItem>((resolve, reject) =>
+    return new Promise<DatabaseFindItem<T>>((resolve, reject) =>
       this.db
         .find({})
         .skip(parseInt(token.toString(), 10) || 0)
@@ -222,18 +222,18 @@ class TestDataStoreAbstract implements DatabaseConnector {
 /**
  * @member connector
  */
-class AbstractedDataStore implements DatabaseConnector {
+class AbstractedDataStore<T extends TableTemplate> implements DatabaseConnector<T> {
   table: string;
-  connector: DatabaseConnector;
+  connector: DatabaseConnector<T>;
 
   constructor(table: string) {
     this.connector = process.env.NODE_ENV === 'test' ? new TestDataStoreAbstract(table) : new DataStoreAbstract(table);
   }
 
-  async create(data: any) {
+  async create(data: T) {
     return this.connector.create(data);
   }
-  async update(id: string, data: any) {
+  async update(id: string, data: T) {
     return this.connector.update(id, data);
   }
   async read(id: string) {

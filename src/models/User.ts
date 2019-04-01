@@ -7,16 +7,16 @@ import { createToken } from '@/controllers/auth';
 import { checkEmptyItems } from '@/lib/utils';
 import { checkValidId, checkValidEmail, checkValidPassword } from '@/lib/utils/user';
 
-class UserDatabase extends DataStore {
+class UserDatabase extends DataStore<UserTable> {
   constructor() {
     super('user');
   }
 
-  static async createJwtToken({ _id, id, email, username }) {
+  static async createJwtToken({ _id, id, email, username }: UserTable): Promise<string> {
     return createToken({ _id, id: id, email, username });
   }
 
-  async signup({ id, email, username, password }: UserTable) {
+  async signup({ id, email, username, password }: UserTable): Promise<string> {
     // check empty values
     checkEmptyItems({ id, username, password, email });
 
@@ -41,7 +41,7 @@ class UserDatabase extends DataStore {
     return UserDatabase.createJwtToken({ ...newUser });
   }
 
-  static async compareUserPasswordAndLogin(user, password = null) {
+  static async compareUserPasswordAndLogin(user, password = null): Promise<string> {
     if (!password) throw new Error('A password is required');
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new Error('Incorrect password');
@@ -49,12 +49,12 @@ class UserDatabase extends DataStore {
     return this.createJwtToken({ ...user });
   }
 
-  async login({ user = '', password }) {
+  async login({ user = '', password }): Promise<string> {
     if (checkValidEmail(user)) return this.loginByEmail({ email: user, password });
     return this.loginById({ id: user, password });
   }
 
-  async loginById({ id, password }) {
+  async loginById({ id, password }): Promise<string> {
     id = id.toLowerCase();
     // Check exist user id
     const { entities: existId } = await this.find([{ key: 'id', op: '=', value: id }]);
@@ -63,7 +63,7 @@ class UserDatabase extends DataStore {
     return UserDatabase.compareUserPasswordAndLogin(existId[0], password);
   }
 
-  async loginByEmail({ email, password }) {
+  async loginByEmail({ email, password }): Promise<string> {
     email = email.toLowerCase();
     if (!checkValidEmail(email)) throw new Error('Invalid email');
 
@@ -74,7 +74,7 @@ class UserDatabase extends DataStore {
     return UserDatabase.compareUserPasswordAndLogin(existEmail[0], password);
   }
 
-  async getUserInfoByPk(id) {
+  async getUserInfoByPk(id): Promise<UserTable> {
     if (!id) throw new Error('Required id');
 
     const userinfo = await this.read(id);
@@ -83,16 +83,16 @@ class UserDatabase extends DataStore {
     return userinfo;
   }
 
-  async getUserInfoById(id) {
+  async getUserInfoById(id): Promise<UserTable> {
     if (!id) throw new Error('Required id');
 
     const { entities: existUser } = await this.find([{ key: 'id', op: '=', value: id }]);
     if (!existUser.length) throw new Error('User not found');
 
-    return existUser[0] || {};
+    return existUser[0] || { id: undefined, email: undefined, username: undefined, password: undefined };
   }
 
-  async updateUserInfo(id, username, email, github, linkedin, description) {
+  async updateUserInfo(id, username, email, github, linkedin, description): Promise<UserTable> {
     if (!id) throw new Error('Required id');
 
     // Empty check
