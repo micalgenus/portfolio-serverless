@@ -40,5 +40,6 @@ export const Mutation = gql`
     Category mutation
     """
     createCategory: String!
+    removeCategory(id: String!): Boolean!
   }
 `;

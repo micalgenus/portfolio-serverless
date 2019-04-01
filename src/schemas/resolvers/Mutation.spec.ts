@@ -230,7 +230,7 @@ describe('GraphQL Mutation', function() {
         user = await verify(token);
       });
 
-      it('Create portfolio', async function() {
+      it('Create category', async function() {
         const id = await Mutation.createCategory(null, null, { user });
         assert.equal(!!id, true);
       });
@@ -246,6 +246,43 @@ describe('GraphQL Mutation', function() {
         const message = await Mutation.createCategory(null, null, { user: { id: 'notexist' } }).catch(err => err.message);
         assert.equal(message, 'User not found');
       });
+    });
+  });
+
+  describe('removeCategory', function() {
+    let token = null;
+    let user = null;
+    let category1 = null;
+    let category2 = null;
+
+    before(async () => {
+      token = await Mutation.login(null, { user: 'tester', password: 'test1234' });
+      user = await verify(token);
+      category1 = await Mutation.createCategory(null, null, { user });
+      category2 = await Mutation.createCategory(null, null, { user });
+    });
+
+    describe('Success', function() {
+      it('Remove category', async function() {
+        const result = await Mutation.removeCategory(null, { id: category1 }, { user });
+        assert.equal(result, true);
+      });
+    });
+
+    describe('Invalid', function() {
+      it('Not exist', async function() {
+        const message = await Mutation.removeCategory(null, { id: category1 }, { user }).catch(err => err.message);
+        assert.equal(message, 'Category not found');
+      });
+
+      it('Permission deined', async function() {
+        const message = await Mutation.removeCategory(null, { id: category2 }, { user: { id: 'category' } }).catch(err => err.message);
+        assert.equal(message, 'Permission denied');
+      });
+    });
+
+    after(async () => {
+      await Mutation.removeCategory(null, { id: category2 }, { user });
     });
   });
 });
