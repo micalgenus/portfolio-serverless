@@ -249,6 +249,56 @@ describe('GraphQL Mutation', function() {
     });
   });
 
+  describe('updateCategory', function() {
+    let token = null;
+    let user = null;
+    let category1 = null;
+    let category2 = null;
+
+    before(async () => {
+      token = await Mutation.login(null, { user: 'category', password: 'test1234' });
+      user = await verify(token);
+      category1 = await Mutation.createCategory(null, null, { user });
+      category2 = await Mutation.createCategory(null, null, { user });
+    });
+
+    describe('Success', function() {
+      it('Update category', async function() {
+        const { name } = await Mutation.updateCategory(null, { id: category1, category: { name: 'category' } }, { user });
+        assert.deepEqual({ name }, { name: 'category' });
+      });
+    });
+
+    describe('Invalid', function() {
+      it('Empty items', async function() {
+        const message = await Mutation.updateCategory(null, { id: category2, category: {} }, { user }).catch(err => err.message);
+        assert.equal(message, 'No information to update');
+      });
+
+      it('Permission deined', async function() {
+        const message = await Mutation.removeCategory(null, { id: category2, category: { name: 'category' } }, { user: { id: 'tester' } }).catch(
+          err => err.message
+        );
+        assert.equal(message, 'Permission denied');
+      });
+
+      it('empty category user', async function() {
+        const message = await Mutation.updateCategory(null, { id: category2, category: {} }, { user }).catch(err => err.message);
+        assert.equal(message, 'No information to update');
+      });
+
+      it('Not exist', async function() {
+        const message = await Mutation.removeCategory(null, { id: '-1', category: { name: 'category' } }, { user }).catch(err => err.message);
+        assert.equal(message, 'Category not found');
+      });
+    });
+
+    after(async function() {
+      await Mutation.removeCategory(null, { id: category1 }, { user });
+      await Mutation.removeCategory(null, { id: category2 }, { user });
+    });
+  });
+
   describe('removeCategory', function() {
     let token = null;
     let user = null;

@@ -21,7 +21,7 @@ describe('Utils library', function() {
         it('Undefined data', function() {
           try {
             utils.checkEmptyItems({ test1: 1, test2: undefined });
-            assert.equal('throw error', false);
+            assert.equal('throw error', 'false');
           } catch (err) {
             assert.equal(err.message, 'Empty test2');
           }

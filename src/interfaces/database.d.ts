@@ -61,6 +61,6 @@ export interface UserTable extends TableTemplate {
 }
 
 export interface CategoryTable extends TableTemplate {
-  user: string;
+  user?: string;
   name?: string;
 }
