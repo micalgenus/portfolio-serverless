@@ -1,6 +1,6 @@
 import { Operator } from '@google-cloud/datastore/build/src/query';
 
-export interface DatabaseFindItem<T> {
+export interface DatabaseFindItem<T extends TableTemplate> {
   entities: T[];
   hasMore: string | false;
 }
@@ -29,7 +29,7 @@ export interface DatabaseConnector<T> {
   create: (data: any) => Promise<T>;
   update: (id: string, data: any) => Promise<T>;
   read: (id: string) => Promise<T>;
-  find: (filters: DatabaseFilterItem[]) => Promise<DatabaseFindItem<T>>;
+  find: (filters: DatabaseFilterItem[], order?: keyof T, desc?: boolean) => Promise<DatabaseFindItem<T>>;
   list: (limit: number, order: string, token: string | Buffer) => Promise<DatabaseFindItem<T>>;
   delete: (id: string) => Promise<any>;
 }
@@ -63,4 +63,5 @@ export interface UserTable extends TableTemplate {
 export interface CategoryTable extends TableTemplate {
   user?: string;
   name?: string;
+  sequence?: number;
 }

@@ -95,10 +95,11 @@ class DataStoreAbstract<T extends TableTemplate> extends DataStoreBasic<T> imple
     });
   }
 
-  async find(filters: DatabaseFilterItem[]) {
+  async find(filters: DatabaseFilterItem[], order?: keyof T, desc?: boolean) {
     let q = datastore.createQuery([this.table]);
 
     for (const filter of filters) q = q.filter(filter.key, filter.op, filter.value);
+    if (order) q = q.order(order.toString(), { descending: desc || false });
 
     return this.runQuery(q);
   }
@@ -175,24 +176,25 @@ class TestDataStoreAbstract<T extends TableTemplate> implements DatabaseConnecto
     );
   }
 
-  async find(filters: DatabaseFilterItem[]) {
-    return new Promise<DatabaseFindItem<T>>((resolve, reject) =>
-      this.db.find(
-        {
-          $where: function() {
-            return !!filters.reduce((r, filter) => {
-              if (r === false) return false;
-              if (executeFilterOperation(r[filter.key], filter.op, filter.value)) return r;
-              return false;
-            }, this);
-          },
+  async find(filters: DatabaseFilterItem[], order?: keyof T, desc?: boolean) {
+    return new Promise<DatabaseFindItem<T>>((resolve, reject) => {
+      let q = this.db.find({
+        $where: function() {
+          return !!filters.reduce((r, filter) => {
+            if (r === false) return false;
+            if (executeFilterOperation(r[filter.key], filter.op, filter.value)) return r;
+            return false;
+          }, this);
         },
-        function(err, docs) {
-          if (err) return reject(err);
-          return resolve({ entities: docs, hasMore: false });
-        }
-      )
-    );
+      });
+
+      if (order) q = q.sort({ [order.toString()]: desc ? -1 : 1 });
+
+      return q.exec(function(err, docs) {
+        if (err) return reject(err);
+        return resolve({ entities: docs, hasMore: false });
+      });
+    });
   }
 
   async list(limit: number, order: string, token: string | Buffer) {
@@ -239,8 +241,8 @@ class AbstractedDataStore<T extends TableTemplate> implements DatabaseConnector<
   async read(id: string) {
     return this.connector.read(id);
   }
-  async find(filters: DatabaseFilterItem[]) {
-    return this.connector.find(filters);
+  async find(filters: DatabaseFilterItem[], order?: keyof T, desc?: boolean) {
+    return this.connector.find(filters, order, desc);
   }
   async list(limit: number, order: string, token: string | Buffer) {
     return this.connector.list(limit, order, token);
