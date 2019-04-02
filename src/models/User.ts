@@ -5,7 +5,7 @@ import { UserTable } from '@/interfaces';
 import { createToken } from '@/controllers/auth';
 
 import { checkEmptyItems } from '@/lib/utils';
-import { checkValidId, checkValidEmail, checkValidPassword } from '@/lib/utils/user';
+import * as UserUtils from '@/lib/utils/user';
 
 class UserDatabase extends DataStore<UserTable> {
   constructor() {
@@ -23,9 +23,9 @@ class UserDatabase extends DataStore<UserTable> {
     id = id.toLowerCase();
 
     // check invalid values
-    if (!checkValidId(id)) throw new Error('Invalid id');
-    if (!checkValidEmail(email)) throw new Error('Invalid email');
-    if (!checkValidPassword(password)) throw new Error('Invalid password');
+    if (!UserUtils.checkValidId(id)) throw new Error('Invalid id');
+    if (!UserUtils.checkValidEmail(email)) throw new Error('Invalid email');
+    if (!UserUtils.checkValidPassword(password)) throw new Error('Invalid password');
 
     // Check exist user id
     const { entities: existId } = await this.find([{ key: 'id', op: '=', value: id }]);
@@ -50,7 +50,7 @@ class UserDatabase extends DataStore<UserTable> {
   }
 
   async login({ user = '', password }): Promise<string> {
-    if (checkValidEmail(user)) return this.loginByEmail({ email: user, password });
+    if (UserUtils.checkValidEmail(user)) return this.loginByEmail({ email: user, password });
     return this.loginById({ id: user, password });
   }
 
@@ -65,7 +65,7 @@ class UserDatabase extends DataStore<UserTable> {
 
   async loginByEmail({ email, password }): Promise<string> {
     email = email.toLowerCase();
-    if (!checkValidEmail(email)) throw new Error('Invalid email');
+    if (!UserUtils.checkValidEmail(email)) throw new Error('Invalid email');
 
     // Check exist user id
     const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: email }]);
@@ -92,7 +92,7 @@ class UserDatabase extends DataStore<UserTable> {
     return existUser[0] || { id: undefined, email: undefined, username: undefined, password: undefined };
   }
 
-  async updateUserInfo(id, username, email, github, linkedin, description): Promise<UserTable> {
+  async updateUserInfo(id, { username, email, github, linkedin, description }: UserTable): Promise<UserTable> {
     if (!id) throw new Error('Required id');
 
     // Empty check
@@ -105,14 +105,7 @@ class UserDatabase extends DataStore<UserTable> {
     if (!userInfo) throw new Error('User not found');
 
     // Same data as before
-    if (
-      username === userInfo.username &&
-      email === userInfo.email &&
-      github === userInfo.github &&
-      linkedin === userInfo.linkedin &&
-      description === userInfo.description
-    )
-      throw new Error('No information to update');
+    if (!UserUtils.isChangeUserDataWithBefore({ username, email, github, linkedin, description }, userInfo)) throw new Error('No information to update');
 
     if (email && email !== userInfo.email) {
       // Check exist user email
@@ -120,7 +113,7 @@ class UserDatabase extends DataStore<UserTable> {
       if (existEmail.length) throw new Error('Exist user email');
 
       // Check valid email
-      if (email && !checkValidEmail(email)) throw new Error('Invalid email');
+      if (email && !UserUtils.checkValidEmail(email)) throw new Error('Invalid email');
     }
 
     // Update user information
@@ -130,7 +123,7 @@ class UserDatabase extends DataStore<UserTable> {
       email: (email === undefined ? userInfo.email : email) || '',
       github: (github === undefined ? userInfo.github : github) || '',
       linkedin: (linkedin === undefined ? userInfo.linkedin : linkedin) || '',
-      description: (description === undefined ? userInfo.description.trim() : description.trim()) || '',
+      description: ((description === undefined ? userInfo.description : description) || '').trim(),
     };
 
     const updateInfo = await this.update(id, updateData);

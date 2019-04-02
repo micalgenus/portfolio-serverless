@@ -49,14 +49,13 @@ interface TableTemplate {
  * @member isAdmin
  */
 export interface UserTable extends TableTemplate {
-  id: string;
-  email: string;
-  username: string;
-  password: string;
+  id?: string;
+  email?: string;
+  username?: string;
+  password?: string;
   github?: string;
   linkedin?: string;
   description?: string;
-
   isAdmin?: boolean;
 }
 
