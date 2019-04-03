@@ -176,6 +176,7 @@ describe('GraphQL Mutation', function() {
         token = await Mutation.login(null, { user: 'readonly', password: 'test1234' });
         user = await verify(token);
       });
+
       describe('Empty items', function() {
         it('User object', async function() {
           const message = await Mutation.updateUserInfo(null, {}, { user: undefined }).catch(err => err.message);
