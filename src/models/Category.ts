@@ -1,11 +1,28 @@
 import DataStore from './index';
 import { CategoryTable } from '@/interfaces';
 
+import { cache, CACHE_EXPIRE } from '@/config';
+import { getCategoryCacheKey } from '@/lib/utils/cache';
+
 import UserModel from './User';
 
 class CategoryDatabase extends DataStore<CategoryTable> {
   constructor() {
     super('category');
+  }
+
+  static async updateCacheItem(id: string, info: CategoryTable[]) {
+    return cache.set(getCategoryCacheKey(id), JSON.stringify(info), 'EX', CACHE_EXPIRE);
+  }
+
+  static async getCacheItem(id): Promise<CategoryTable[]> {
+    const data = await cache.get(getCategoryCacheKey(id)).catch(() => null);
+    if (data) return JSON.parse(data);
+    return null;
+  }
+
+  static async removeCacheItem(id: string) {
+    return cache.set(getCategoryCacheKey(id), JSON.stringify({}), 'EX', 0);
   }
 
   async updateOrder(id: string, sequence: number) {
@@ -28,6 +45,8 @@ class CategoryDatabase extends DataStore<CategoryTable> {
       const c = categories[i];
       if (c.sequence !== categories.length - i) await this.updateOrder(c._id, categories.length - i);
     }
+
+    CategoryDatabase.removeCacheItem(user);
   }
 
   async createNewCategory(user: string) {
@@ -47,11 +66,16 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   async getCategoryByUserId(user: string, filter?: string[]) {
     if (!user) throw new Error('Required user');
 
+    const cacheItem = await CategoryDatabase.getCacheItem(user);
+    if (cacheItem) return cacheItem;
+
     const existUser = await UserModel.getUserInfoById(user);
     if (!existUser) throw new Error('User not found');
 
     let { entities: categories } = await this.find([{ key: 'user', op: '=', value: user }], 'sequence', true);
     if (filter) categories = categories.filter(p => filter.includes(p._id.toString()));
+
+    CategoryDatabase.updateCacheItem(user, categories);
 
     return categories || [];
   }
@@ -81,6 +105,8 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     // TODO: Update items with transaction
     const updated = await this.update(id, updateData);
     if (!updated) throw new Error('Fail category data update');
+
+    CategoryDatabase.removeCacheItem(user);
 
     return updated;
   }
