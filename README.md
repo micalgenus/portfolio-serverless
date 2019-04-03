@@ -18,6 +18,10 @@ $ yarn build && yarn deploy:gcp
 
 ```
 GOOGLE_DATASTORE_PROJECT_ID=<project-id>
+
+REDIS_HOST=<redis-host>
+REDIS_PORT=<redis-port>
+REDIS_PASSWORD=<redis-password>
 ```
 
 GOOGLE_DATASTORE_PROJECT_ID: 배포하고자 하는 Cloud Functions와 같은 프로젝트에 존재하는 Cloud Datastore이여야 합니다.
@@ -42,4 +46,9 @@ $ openssl rsa -in private.pem -out public.pem -outform PEM -pubout
 
 ### 자동 배포
 
-travis-ci를 사용하여 자동 배포를 진행하기 위해서는 `keyfile.json`, `private.pem`파일을 `travis-secret.tar`로 묶은 후, traivs-cli의 encrypt-file을 사용하여 `travis-secret.tar.enc`로 만듭니다.
+travis-ci를 사용하여 자동 배포를 진행하기 위해서는 `.env`, `keyfile.json`, `private.pem`파일을 `travis-secret.tar`로 묶은 후, traivs-cli의 encrypt-file을 사용하여 `travis-secret.tar.enc`로 만듭니다.
+
+```
+$ tar cf travis-secret.tar .env keyfile.json private.pem
+$ travis encrypt-file travis-secret.tar --add
+```
