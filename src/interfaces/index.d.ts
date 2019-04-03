@@ -7,7 +7,7 @@ export * from './database';
  * @extends Express.Request
  * @desc Add AuthorizationRequest.user
  */
-export interface AuthorizationRequest extends Request {
+export interface GraphQLRequest extends Request {
   user?: object;
 }
 
@@ -15,6 +15,6 @@ export interface AuthorizationRequest extends Request {
  * @extends ExpressContext
  * @desc Add AuthorizationExpressContext.req.user
  */
-export interface AuthorizationExpressContext extends ExpressContext {
-  req: AuthorizationRequest;
+export interface GraphQLExpressContext extends ExpressContext {
+  req: GraphQLRequest;
 }
