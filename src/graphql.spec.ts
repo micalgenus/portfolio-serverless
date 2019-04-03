@@ -1,7 +1,6 @@
-import chai, { assert } from 'chai';
+import chai from 'chai';
 import chaiHttp from 'chai-http';
-import { AbortError, AggregateError } from 'redis';
-import graphql, { redis } from './graphql';
+import graphql from './graphql';
 
 import '@/schemas/resolvers/Mutation.spec';
 import '@/schemas/resolvers/Query.spec';
@@ -16,23 +15,8 @@ describe('Serverless', function() {
     chai
       .request(graphql)
       .post('/')
-      .end(() => done());
-  });
-
-  describe('Redis connection test', () => {
-    before(() => {
-      redis.end(true);
-    });
-
-    it('Close', () => {
-      redis.on('error', function(err) {
-        assert(err instanceof Error);
-        assert(err instanceof AbortError);
-        assert(err instanceof AggregateError);
-        // The set and get get aggregated in here
-        assert.strictEqual(err.errors.length, 2);
-        assert.strictEqual(err.code, 'NR_CLOSED');
+      .end(() => {
+        done();
       });
-    });
   });
 });
