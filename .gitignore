@@ -48,3 +48,6 @@ public.pem
 
 # travis encrypt files
 /travis-secret.tar
+
+# documentation
+/docs

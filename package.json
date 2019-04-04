@@ -4,8 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "prebuild": "rm -rf dist",
+    "prebuild": "rm -rf dist docs",
     "build": "babel src --out-dir dist --copy-files --extensions \".ts,.tsx\"",
+    "postbuild": "graphdoc -s ./dist/schemas/typeDefs.js -o ./docs",
     "deploy": "yarn deploy:gcp",
     "deploy:gcp": "serverless deploy",
     "test": "NODE_ENV=test mocha ./dist/**/*.spec.js",
@@ -32,6 +33,7 @@
     "typescript": "^3.4.1"
   },
   "dependencies": {
+    "@2fd/graphdoc": "^2.4.0",
     "@google-cloud/datastore": "^3.1.2",
     "apollo-server-express": "^2.4.8",
     "bcrypt": "^3.0.5",

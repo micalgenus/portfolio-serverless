@@ -3,18 +3,12 @@ import path from 'path';
 
 import { makeExecutableSchema } from 'graphql-tools';
 
-import * as inputTypes from './inputTypes';
-import * as types from './types';
-
-import Query from './Query';
-import Mutation from './Mutation';
+// Define our schema using the GraphQL schema language
+import typeDefs from './typeDefs';
 
 const RESOLVER_DIR = 'resolvers';
 const RESOLVER_EXT = '.js';
 const REMOVE_FILES = ['.spec'];
-
-// Define our schema using the GraphQL schema language
-const typeDefs = [...Object.keys(inputTypes).map(k => inputTypes[k]), ...Object.keys(types).map(k => types[k]), Query, Mutation];
 
 // rs = require(resolvers/*.js) (without extension)
 const rs = fs
