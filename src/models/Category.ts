@@ -12,7 +12,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   }
 
   static async updateCacheItem(id: string, info: CategoryTable[]) {
-    return cache.set(getCategoryCacheKey(id), JSON.stringify(info), 'EX', CACHE_EXPIRE);
+    cache.set(getCategoryCacheKey(id), JSON.stringify(info), 'EX', CACHE_EXPIRE);
   }
 
   static async getCacheItem(id): Promise<CategoryTable[]> {
@@ -22,7 +22,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   }
 
   static async removeCacheItem(id: string) {
-    return cache.set(getCategoryCacheKey(id), JSON.stringify({}), 'EX', 0);
+    cache.del(getCategoryCacheKey(id));
   }
 
   async updateOrder(id: string, sequence: number) {
