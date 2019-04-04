@@ -12,6 +12,8 @@
 $ yarn build && yarn deploy:gcp
 ```
 
+GraphQL Schemas: https://docs.portfolio.micalgenus.com/
+
 ### 필수 사항
 
 #### .env
