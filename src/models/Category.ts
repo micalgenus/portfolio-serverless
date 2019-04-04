@@ -122,10 +122,11 @@ class CategoryDatabase extends DataStore<CategoryTable> {
 
     if (category.user !== user) throw new Error('Permission denied');
 
-    await this.updateCategoriesOrder(user);
-
     // TODO: with transaction for items...
-    return !!this.delete(id);
+    const result = !!this.delete(id);
+
+    if (result) await this.updateCategoriesOrder(user);
+    return result;
   }
 }
 
