@@ -11,8 +11,9 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     super('category');
   }
 
-  static async updateCacheItem(id: string, info: CategoryTable[]) {
-    cache.set(getCategoryCacheKey(id), JSON.stringify(info), 'EX', CACHE_EXPIRE);
+  static async updateCacheItem(id: string, info: CategoryTable[]): Promise<boolean> {
+    const result = await cache.set(getCategoryCacheKey(id), JSON.stringify(info), 'EX', CACHE_EXPIRE);
+    return result === 'OK';
   }
 
   static async getCacheItem(id): Promise<CategoryTable[]> {
@@ -21,32 +22,38 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     return null;
   }
 
-  static async removeCacheItem(id: string) {
-    cache.del(getCategoryCacheKey(id));
+  static async removeCacheItem(id: string): Promise<boolean> {
+    const result = await cache.del(getCategoryCacheKey(id));
+    return !!result;
   }
 
-  async updateOrder(id: string, sequence: number) {
+  async updateOrder(id: string, sequence: number): Promise<boolean> {
+    if (!(sequence > 0)) throw new Error('Sequence must be positive integer');
+
     const category = await this.read(id);
     if (!category) throw new Error('Category not found');
 
-    const updateData = {
-      ...category,
-      sequence: sequence,
-    };
+    if (category.sequence === sequence) return true;
+    category.sequence = sequence;
 
     // TODO: Update items with transaction
-    const updated = await this.update(id, updateData);
-    if (!updated) throw new Error('Fail category data update');
+    const updated = await this.update(id, category);
+    if (!updated) throw new Error('Fail category order update');
+    return true;
   }
 
-  async updateCategoriesOrder(user: string) {
-    const categories = await this.getCategoryByUserId(user);
+  async updateCategoriesOrder(user: string, categories: CategoryTable[]): Promise<boolean> {
     for (let i = 0; i < categories.length; i++) {
       const c = categories[i];
-      if (c.sequence !== categories.length - i) await this.updateOrder(c._id, categories.length - i);
+      if (c.sequence !== categories.length - i) {
+        await this.updateOrder(c._id.toString(), categories.length - i);
+        categories[i].sequence = categories.length - i;
+      }
     }
 
-    CategoryDatabase.removeCacheItem(user);
+    const result = await CategoryDatabase.updateCacheItem(user, categories);
+    if (!result) throw new Error('Fail update categories sequence');
+    return true;
   }
 
   async createNewCategory(user: string) {
@@ -55,10 +62,13 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     const existUser = await UserModel.getUserInfoById(user);
     if (!existUser) throw new Error('User not found');
 
-    const { _id } = await this.create({ user, sequence: 0, name: '' });
+    const createCategory = { user, sequence: 0, name: '' };
+
+    const { _id } = await this.create(createCategory);
     if (!_id) throw new Error('Failed create category');
 
-    await this.updateCategoriesOrder(user);
+    const categories = [...(await this.getCategoryByUserId(user)), { _id: _id, ...createCategory }];
+    await this.updateCategoriesOrder(user, categories);
 
     return _id;
   }
@@ -67,7 +77,10 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     if (!user) throw new Error('Required user');
 
     const cacheItem = await CategoryDatabase.getCacheItem(user);
-    if (cacheItem) return cacheItem;
+    if (cacheItem) {
+      if (!filter) return cacheItem;
+      return cacheItem.filter(c => filter.includes(c._id.toString()));
+    }
 
     const existUser = await UserModel.getUserInfoById(user);
     if (!existUser) throw new Error('User not found');
@@ -75,7 +88,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     let { entities: categories } = await this.find([{ key: 'user', op: '=', value: user }], 'sequence', true);
     if (filter) categories = categories.filter(p => filter.includes(p._id.toString()));
 
-    CategoryDatabase.updateCacheItem(user, categories);
+    if (!filter) CategoryDatabase.updateCacheItem(user, categories);
 
     return categories || [];
   }
@@ -106,7 +119,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     const updated = await this.update(id, updateData);
     if (!updated) throw new Error('Fail category data update');
 
-    CategoryDatabase.removeCacheItem(user);
+    await CategoryDatabase.removeCacheItem(user);
 
     return updated;
   }
@@ -125,7 +138,11 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     // TODO: with transaction for items...
     const result = !!this.delete(id);
 
-    if (result) await this.updateCategoriesOrder(user);
+    if (result) {
+      const categories = await this.getCategoryByUserId(user);
+      await this.updateCategoriesOrder(user, categories.filter(c => c._id.toString() !== id));
+    }
+
     return result;
   }
 }
