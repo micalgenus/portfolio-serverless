@@ -11,7 +11,7 @@ import '@/models';
 // DotENV
 dotenv.config();
 
-export const CACHE_EXPIRE = 3600;
+export const CACHE_EXPIRE = 600;
 
 export const cache =
   process.env.NODE_ENV !== 'test'
