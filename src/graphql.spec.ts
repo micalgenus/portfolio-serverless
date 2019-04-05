@@ -15,8 +15,6 @@ describe('Serverless', function() {
     chai
       .request(graphql)
       .post('/')
-      .end(() => {
-        done();
-      });
-  });
+      .end(() => done());
+  }).timeout(10000);
 });
