@@ -124,6 +124,27 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     return updated;
   }
 
+  async updateCategorySequence(user: string, sequences: { _id: string; sequence: number }[]) {
+    if (sequences.length === 0) throw new Error('Requires that the sequences is not empty');
+
+    const existUser = await UserModel.getUserInfoById(user);
+    if (!existUser) throw new Error('User not found');
+
+    const categories = await this.getCategoryByUserId(user);
+    for (const sequence of sequences) {
+      const result = await this.updateOrder(sequence._id, sequence.sequence);
+      if (!result) throw new Error('Fail update category sequence');
+
+      for (const category of categories) {
+        if (category._id === sequence._id) category.sequence = sequence.sequence;
+      }
+    }
+
+    categories.sort((a, b) => b.sequence - a.sequence);
+    await this.updateCategoriesOrder(user, categories);
+    return true;
+  }
+
   async removeCategoryById(id: string, user: string) {
     if (!id || !user) throw new Error('Required id and user');
 

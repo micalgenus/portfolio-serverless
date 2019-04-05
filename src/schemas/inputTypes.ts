@@ -7,3 +7,10 @@ export const CategoryInput = gql`
     # items(items: [String]): [PortfolioItem]
   }
 `;
+
+export const CategorySequenceInput = gql`
+  input CategorySequenceInput {
+    _id: String!
+    sequence: Int!
+  }
+`;

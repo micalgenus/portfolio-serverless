@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import { verify } from '@/controllers/auth';
 
 const Mutation = require('./Mutation');
+const User = require('./User');
 
 describe('GraphQL Mutation', function() {
   before(async () => {
@@ -295,6 +296,37 @@ describe('GraphQL Mutation', function() {
     });
 
     after(async function() {
+      await Mutation.removeCategory(null, { id: category1 }, { user });
+      await Mutation.removeCategory(null, { id: category2 }, { user });
+    });
+  });
+
+  describe('updateCategorySequence', function() {
+    let token = null;
+    let user = null;
+    let category1 = null;
+    let category2 = null;
+
+    before(async () => {
+      token = await Mutation.login(null, { user: 'category', password: 'test1234' });
+      user = await verify(token);
+      category1 = await Mutation.createCategory(null, null, { user });
+      category2 = await Mutation.createCategory(null, null, { user });
+    });
+
+    describe('Success', function() {
+      it('Update category sequence', async function() {
+        const result = await Mutation.updateCategorySequence(null, { sequences: [{ _id: category1, sequence: 1 }, { _id: category2, sequence: 2 }] }, { user });
+        assert.equal(result, true);
+        const categories = await User.categories({ id: user.id }, {});
+        assert.deepEqual(categories, [
+          { _id: category2, name: '', sequence: 2, user: 'category' },
+          { _id: category1, name: '', sequence: 1, user: 'category' },
+        ]);
+      });
+    });
+
+    after(async () => {
       await Mutation.removeCategory(null, { id: category1 }, { user });
       await Mutation.removeCategory(null, { id: category2 }, { user });
     });

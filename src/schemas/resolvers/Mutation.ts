@@ -28,6 +28,11 @@ module.exports = {
     return CategoryModel.updateCategory(id, user.id, category);
   },
 
+  updateCategorySequence: async (_, { sequences }, { user }) => {
+    if (!user) throw new Error('You are not authenticated!');
+    return CategoryModel.updateCategorySequence(user.id, sequences);
+  },
+
   removeCategory: async (_, { id }, { user }) => {
     if (!user) throw new Error('You are not authenticated!');
     return CategoryModel.removeCategoryById(id, user.id);
