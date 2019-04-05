@@ -35,7 +35,7 @@ export interface DatabaseConnector<T> {
 }
 
 interface TableTemplate {
-  _id?: any;
+  _id?: string | number;
 }
 
 /**
