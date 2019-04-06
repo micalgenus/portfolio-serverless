@@ -5,6 +5,7 @@ import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCache
 import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
 
 import UserModel from './User';
+import CategoryItemModel from './CategoryItem';
 
 class CategoryDatabase extends DataStore<CategoryTable> {
   constructor() {
@@ -131,7 +132,12 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     if (category.user !== user) throw new Error('Permission denied');
 
     // TODO: with transaction for items...
-    // TODO: with remove category children items
+    const items = await CategoryItemModel.getItemsByCategory(id, user);
+    for (const item of items) {
+      const result = await CategoryItemModel.removeCategoryItemById(item._id.toString(), id, user);
+      if (!result) throw new Error('Fail remove category');
+    }
+
     const result = !!this.delete(id);
 
     if (result) {

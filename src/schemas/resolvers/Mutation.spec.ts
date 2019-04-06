@@ -3,6 +3,7 @@ import { verify } from '@/controllers/auth';
 
 const Mutation = require('./Mutation');
 const User = require('./User');
+const Category = require('./Category');
 
 describe('GraphQL Mutation', function() {
   before(async () => {
@@ -11,6 +12,7 @@ describe('GraphQL Mutation', function() {
     await Mutation.signup(null, { id: 'me', username: 'me', email: 'me@gmail.com', password: 'test1234' });
     await Mutation.signup(null, { id: 'update', username: 'update', email: 'update@gmail.com', password: 'test1234' });
     await Mutation.signup(null, { id: 'category', username: 'category', email: 'category@gmail.com', password: 'test1234' });
+    await Mutation.signup(null, { id: 'categoryitem', username: 'categoryitem', email: 'categoryitem@gmail.com', password: 'test1234' });
   });
 
   describe('signup', function() {
@@ -423,6 +425,42 @@ describe('GraphQL Mutation', function() {
         const message = await Mutation.removeCategoryItem(null, { id: item, category }, { user }).catch(err => err.message);
         assert.equal(message, 'Category item not found');
       });
+    });
+  });
+
+  describe('updateCategoryItemSequence', function() {
+    let token = null;
+    let user = null;
+    let category = null;
+    let item1 = null;
+    let item2 = null;
+
+    before(async () => {
+      token = await Mutation.login(null, { user: 'categoryitem', password: 'test1234' });
+      user = await verify(token);
+      category = await Mutation.createCategory(null, null, { user });
+      item1 = await Mutation.createCategoryItem(null, { category }, { user });
+      item2 = await Mutation.createCategoryItem(null, { category }, { user });
+    });
+
+    describe('Success', function() {
+      it('Update category items sequence', async function() {
+        const result = await Mutation.updateCategoryItemSequence(
+          null,
+          { category, sequences: [{ _id: item1, sequence: 1 }, { _id: item2, sequence: 2 }] },
+          { user }
+        );
+        assert.equal(result, true);
+        const items = await Category.items({ _id: category, user: user.id }, {});
+        assert.deepEqual(items, [
+          { _id: item2, sequence: 2, category: category, name: '', description: '' },
+          { _id: item1, sequence: 1, category: category, name: '', description: '' },
+        ]);
+      });
+    });
+
+    after(async () => {
+      await Mutation.removeCategory(null, { id: category }, { user });
     });
   });
 });

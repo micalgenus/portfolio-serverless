@@ -11,7 +11,7 @@ describe('GraphQL User', function() {
     describe('Success', function() {
       it('Get user categories', async function() {
         const categories = (await User.categories({ id: 'tester' }, {})).map(v => ({ user: v.user, name: v.name }));
-        assert.deepEqual(categories, [{ user: 'tester', name: '' }, { user: 'tester', name: '' }]);
+        assert.deepEqual(categories, [{ user: 'tester', name: '' }]);
       });
 
       it('Empty categories', async function() {

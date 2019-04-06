@@ -12,5 +12,6 @@ export default gql`
     removeCategory(id: String!): Boolean!
     createCategoryItem(category: String!): String!
     removeCategoryItem(id: String!, category: String!): Boolean!
+    updateCategoryItemSequence(category: String!, sequences: [SequenceInput]!): Boolean!
   }
 `;

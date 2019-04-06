@@ -5,7 +5,7 @@ import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateC
 
 import UserModel from './User';
 import CategoryModel from './Category';
-import { updateItemsOrder } from '@/lib/utils/order';
+import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
 
 class CategoryItemDatabase extends DataStore<CategoryItemTable> {
   constructor() {
@@ -34,10 +34,11 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
 
     const createCategoryItem = { category, name: '', description: '', sequence: 0 };
 
+    const beforeItems = await this.getItemsByCategory(category, user);
     const { _id } = await this.create(createCategoryItem);
     if (!_id) throw new Error('Failed create category item');
 
-    const items = [...(await this.getItemsByCategory(category, user)), { _id: _id, ...createCategoryItem }];
+    const items = [...beforeItems, { _id: _id, ...createCategoryItem }];
     await updateItemsOrder(
       category,
       items,
@@ -90,11 +91,42 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
         items,
         id => this.read(id),
         (id, data) => this.update(id, data),
-        (id, items) => updateCacheItems(id, items, getCategoryItemCacheKey)
+        (id, data) => updateCacheItems(id, data, getCategoryItemCacheKey)
       );
     }
 
     return result;
+  }
+
+  async updateCategoryItemSequence(category: string, user: string, sequences: { _id: string; sequence: number }[]) {
+    if (!category) throw new Error('Required category');
+    if (sequences.length === 0) throw new Error('Requires that the sequences is not empty');
+
+    const existUser = await UserModel.getUserInfoById(user);
+    if (!existUser) throw new Error('User not found');
+
+    const [existCategory] = await CategoryModel.getCategoryByUserId(user, [category]);
+    if (!existCategory) throw new Error('Category not found');
+
+    const items = await this.getItemsByCategory(category, user);
+    for (const sequence of sequences) {
+      const result = await updateOrder(sequence._id, sequence.sequence, id => this.read(id), (id, data) => this.update(id, data));
+      if (!result) throw new Error('Fail update category sequence');
+
+      for (const item of items) {
+        if (item._id.toString() === sequence._id.toString()) item.sequence = sequence.sequence;
+      }
+    }
+
+    items.sort((a, b) => b.sequence - a.sequence);
+    await updateItemsOrder(
+      category,
+      items,
+      id => this.read(id),
+      (id, data) => this.update(id, data),
+      (id, data) => updateCacheItems(id, data, getCategoryItemCacheKey)
+    );
+    return true;
   }
 }
 
