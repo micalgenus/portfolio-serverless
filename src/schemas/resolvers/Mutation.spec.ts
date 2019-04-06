@@ -368,4 +368,22 @@ describe('GraphQL Mutation', function() {
       await Mutation.removeCategory(null, { id: category2 }, { user });
     });
   });
+
+  describe('createCategoryItem', function() {
+    let user = null;
+    let category = null;
+
+    before(async () => {
+      const token = await Mutation.login(null, { user: 'category', password: 'test1234' });
+      user = await verify(token);
+      category = await Mutation.createCategory(null, null, { user });
+    });
+
+    describe('Success', function() {
+      it('Create item', async function() {
+        const item = !!(await Mutation.createCategoryItem(null, { category }, { user }));
+        assert.equal(item, true);
+      });
+    });
+  });
 });

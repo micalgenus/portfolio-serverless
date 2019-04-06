@@ -56,6 +56,14 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     return true;
   }
 
+  ///////////////////////////////////////////////////////////////////////////
+  //                                Methods                                //
+  ///////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @param user from user._id
+   * @return {string} category._id
+   */
   async createNewCategory(user: string) {
     if (!user) throw new Error('Required user');
 
@@ -157,6 +165,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     if (category.user !== user) throw new Error('Permission denied');
 
     // TODO: with transaction for items...
+    // TODO: with remove category children items
     const result = !!this.delete(id);
 
     if (result) {

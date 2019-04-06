@@ -1,5 +1,6 @@
 import UserModel from '@/models/User';
 import CategoryModel from '@/models/Category';
+import CategoryItemModel from '@/models/CategoryItem';
 
 module.exports = {
   // Handle user signup
@@ -36,5 +37,10 @@ module.exports = {
   removeCategory: async (_, { id }, { user }) => {
     if (!user) throw new Error('You are not authenticated!');
     return CategoryModel.removeCategoryById(id, user.id);
+  },
+
+  createCategoryItem: async (_, { category }, { user }) => {
+    if (!user) throw new Error('You are not authenticated!');
+    return CategoryItemModel.createItemForCategory(category, user.id);
   },
 };
