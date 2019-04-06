@@ -8,7 +8,7 @@ export default gql`
     updateUserInfo(username: String, email: String, github: String, linkedin: String, description: String): User
     createCategory: String!
     updateCategory(id: String!, category: CategoryInput!): Category
-    updateCategorySequence(sequences: [CategorySequenceInput]!): Boolean!
+    updateCategorySequence(sequences: [SequenceInput]!): Boolean!
     removeCategory(id: String!): Boolean!
     createCategoryItem(category: String!): String!
     removeCategoryItem(id: String!, category: String!): Boolean!

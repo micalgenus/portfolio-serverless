@@ -8,8 +8,8 @@ export const CategoryInput = gql`
   }
 `;
 
-export const CategorySequenceInput = gql`
-  input CategorySequenceInput {
+export const SequenceInput = gql`
+  input SequenceInput {
     _id: String!
     sequence: Int!
   }
