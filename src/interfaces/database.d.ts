@@ -64,3 +64,10 @@ export interface CategoryTable extends TableTemplate {
   name?: string;
   sequence?: number;
 }
+
+export interface CategoryItemTable extends TableTemplate {
+  category?: string;
+  name?: string;
+  description?: string;
+  sequence?: number;
+}
