@@ -34,8 +34,12 @@ export interface DatabaseConnector<T> {
   delete: (id: string) => Promise<any>;
 }
 
-interface TableTemplate {
+export interface TableTemplate {
   _id?: string | number;
+}
+
+export interface OrderingTable extends TableTemplate {
+  sequence?: number;
 }
 
 /**
@@ -59,15 +63,13 @@ export interface UserTable extends TableTemplate {
   isAdmin?: boolean;
 }
 
-export interface CategoryTable extends TableTemplate {
+export interface CategoryTable extends OrderingTable {
   user?: string;
   name?: string;
-  sequence?: number;
 }
 
-export interface CategoryItemTable extends TableTemplate {
+export interface CategoryItemTable extends OrderingTable {
   category?: string;
   name?: string;
   description?: string;
-  sequence?: number;
 }

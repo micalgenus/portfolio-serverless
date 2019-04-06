@@ -1,59 +1,14 @@
 import DataStore from './index';
 import { CategoryTable } from '@/interfaces';
 
-import { cache, CACHE_EXPIRE } from '@/config';
-import { getCategoryCacheKey } from '@/lib/utils/cache';
+import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItems, getCacheItems, removeCacheItem } from '@/lib/utils/cache';
+import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
 
 import UserModel from './User';
 
 class CategoryDatabase extends DataStore<CategoryTable> {
   constructor() {
     super('category');
-  }
-
-  static async updateCacheItem(id: string, info: CategoryTable[]): Promise<boolean> {
-    const result = await cache.set(getCategoryCacheKey(id), JSON.stringify(info), 'EX', CACHE_EXPIRE);
-    return result === 'OK';
-  }
-
-  static async getCacheItem(id): Promise<CategoryTable[]> {
-    const data = await cache.get(getCategoryCacheKey(id)).catch(() => null);
-    if (data) return JSON.parse(data);
-    return null;
-  }
-
-  static async removeCacheItem(id: string): Promise<boolean> {
-    const result = await cache.del(getCategoryCacheKey(id));
-    return !!result;
-  }
-
-  async updateOrder(id: string, sequence: number): Promise<boolean> {
-    if (!(sequence > 0)) throw new Error('Sequence must be positive integer');
-
-    const category = await this.read(id);
-    if (!category) throw new Error('Category not found');
-
-    if (category.sequence === sequence) return true;
-    category.sequence = sequence;
-
-    // TODO: Update items with transaction
-    const updated = await this.update(id, category);
-    if (!updated) throw new Error('Fail category order update');
-    return true;
-  }
-
-  async updateCategoriesOrder(user: string, categories: CategoryTable[]): Promise<boolean> {
-    for (let i = 0; i < categories.length; i++) {
-      const c = categories[i];
-      if (c.sequence !== categories.length - i) {
-        await this.updateOrder(c._id.toString(), categories.length - i);
-        categories[i].sequence = categories.length - i;
-      }
-    }
-
-    const result = await CategoryDatabase.updateCacheItem(user, categories);
-    if (!result) throw new Error('Fail update categories sequence');
-    return true;
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -76,7 +31,13 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     if (!_id) throw new Error('Failed create category');
 
     const categories = [...(await this.getCategoryByUserId(user)), { _id: _id, ...createCategory }];
-    await this.updateCategoriesOrder(user, categories);
+    await updateItemsOrder(
+      user,
+      categories,
+      id => this.read(id),
+      (id, data) => this.update(id, data),
+      (id, items) => updateCacheItems(id, items, getCategoryCacheKey)
+    );
 
     return _id;
   }
@@ -84,11 +45,8 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   async getCategoryByUserId(user: string, filter?: string[]) {
     if (!user) throw new Error('Required user');
 
-    const cacheItem = await CategoryDatabase.getCacheItem(user);
-    if (cacheItem) {
-      if (!filter) return cacheItem;
-      return cacheItem.filter(c => filter.includes(c._id.toString()));
-    }
+    const cacheItem = await getCacheItems<CategoryTable>(user, getCategoryCacheKey);
+    if (cacheItem) return returnCacheItemWithFilterOfArrayItems(cacheItem, filter);
 
     const existUser = await UserModel.getUserInfoById(user);
     if (!existUser) throw new Error('User not found');
@@ -96,7 +54,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     let { entities: categories } = await this.find([{ key: 'user', op: '=', value: user }], 'sequence', true);
     if (filter) categories = categories.filter(p => filter.includes(p._id.toString()));
 
-    if (!filter) CategoryDatabase.updateCacheItem(user, categories);
+    if (!filter) await updateCacheItems(user, categories, getCategoryCacheKey);
 
     return categories || [];
   }
@@ -127,7 +85,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     const updated = await this.update(id, updateData);
     if (!updated) throw new Error('Fail category data update');
 
-    await CategoryDatabase.removeCacheItem(user);
+    await removeCacheItem(user, getCategoryCacheKey);
 
     return updated;
   }
@@ -140,7 +98,8 @@ class CategoryDatabase extends DataStore<CategoryTable> {
 
     const categories = await this.getCategoryByUserId(user);
     for (const sequence of sequences) {
-      const result = await this.updateOrder(sequence._id, sequence.sequence);
+      const result = await updateOrder(sequence._id, sequence.sequence, id => this.read(id), (id, data) => this.update(id, data));
+
       if (!result) throw new Error('Fail update category sequence');
 
       for (const category of categories) {
@@ -149,7 +108,13 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     }
 
     categories.sort((a, b) => b.sequence - a.sequence);
-    await this.updateCategoriesOrder(user, categories);
+    await updateItemsOrder(
+      user,
+      categories,
+      id => this.read(id),
+      (id, data) => this.update(id, data),
+      (id, items) => updateCacheItems(id, items, getCategoryCacheKey)
+    );
     return true;
   }
 
@@ -169,8 +134,14 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     const result = !!this.delete(id);
 
     if (result) {
-      const categories = await this.getCategoryByUserId(user);
-      await this.updateCategoriesOrder(user, categories.filter(c => c._id.toString() !== id));
+      const categories = (await this.getCategoryByUserId(user)).filter(c => c._id.toString() !== id);
+      await updateItemsOrder(
+        user,
+        categories,
+        id => this.read(id),
+        (id, data) => this.update(id, data),
+        (id, items) => updateCacheItems(id, items, getCategoryCacheKey)
+      );
     }
 
     return result;
