@@ -17,16 +17,15 @@ const gql = (query: TemplateStringsArray) => query.join('');
 //   }
 // `;
 
-// export const PortfolioItem = gql`
-//   type PortfolioItem {
-//     _id: String!
-//     title: String
-//     date: DateRange
-//     description: String
-//     content: String
-//     link: [Link]
-//   }
-// `;
+export const CategoryItem = gql`
+  type CategoryItem {
+    _id: String!
+    name: String
+    description: String
+    # date: DateRange
+    # link: [Link]
+  }
+`;
 /**
  * @member user reference to user.id
  */
@@ -35,7 +34,7 @@ export const Category = gql`
     _id: String
     user: String
     name: String
-    # items(items: [String]): [PortfolioItem]
+    items(filter: [String]): [CategoryItem]
   }
 `;
 
