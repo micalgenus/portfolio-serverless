@@ -27,10 +27,11 @@ class CategoryDatabase extends DataStore<CategoryTable> {
 
     const createCategory = { user, sequence: 0, name: '' };
 
+    const beforeCategories = await this.getCategoryByUserId(user);
     const { _id } = await this.create(createCategory);
     if (!_id) throw new Error('Failed create category');
 
-    const categories = [...(await this.getCategoryByUserId(user)), { _id: _id, ...createCategory }];
+    const categories = [...beforeCategories, { _id: _id, ...createCategory }];
     await updateItemsOrder(
       user,
       categories,
