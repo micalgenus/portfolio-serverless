@@ -39,7 +39,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
 
     const items = [...(await this.getItemsByCategory(category, user)), { _id: _id, ...createCategoryItem }];
     await updateItemsOrder(
-      user,
+      category,
       items,
       id => this.read(id),
       (id, data) => this.update(id, data),
@@ -55,14 +55,46 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     const [existCategory] = await CategoryModel.getCategoryByUserId(user, [category]);
     if (!existCategory) throw new Error('Category not found');
 
-    const cacheItem = await getCacheItems(existCategory._id.toString(), getCategoryItemCacheKey);
+    const cacheItem = await getCacheItems<CategoryItemTable>(category, getCategoryItemCacheKey);
     if (cacheItem) return returnCacheItemWithFilterOfArrayItems(cacheItem, filter);
 
     let { entities: items } = await this.find([{ key: 'category', op: '=', value: existCategory._id }], 'sequence', true);
     if (filter) items = items.filter(p => filter.includes(p._id.toString()));
 
-    if (!filter) await updateCacheItems(user, items, getCategoryItemCacheKey);
+    if (!filter) await updateCacheItems(category, items, getCategoryItemCacheKey);
     return items || [];
+  }
+
+  async removeCategoryItemById(id: string, category: string, user: string) {
+    if (!id || !category || !user) throw new Error('Required id, category and user');
+
+    const existUser = await UserModel.getUserInfoById(user);
+    if (!existUser) throw new Error('User not found');
+
+    const [existCategory] = await CategoryModel.getCategoryByUserId(user, [category]);
+    if (!existCategory) throw new Error('Category not found');
+
+    if (existCategory.user !== user) throw new Error('Permission denied');
+
+    const item = await this.read(id);
+    if (!item) throw new Error('Category item not found');
+
+    if (item.category !== category) throw new Error('Category does not contain this item');
+
+    const result = !!this.delete(id);
+
+    if (result) {
+      const items = (await this.getItemsByCategory(category, user)).filter(c => c._id.toString() !== id);
+      await updateItemsOrder(
+        category,
+        items,
+        id => this.read(id),
+        (id, data) => this.update(id, data),
+        (id, items) => updateCacheItems(id, items, getCategoryItemCacheKey)
+      );
+    }
+
+    return result;
   }
 }
 

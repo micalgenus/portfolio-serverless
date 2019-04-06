@@ -385,5 +385,44 @@ describe('GraphQL Mutation', function() {
         assert.equal(item, true);
       });
     });
+
+    describe('Invalid', function() {
+      it('Empty category', async function() {
+        const message = await Mutation.createCategoryItem(null, { category: undefined }, { user }).catch(err => err.message);
+        assert.equal(message, 'Category not found');
+      });
+    });
+  });
+
+  describe('removeCategoryItem', function() {
+    let user = null;
+    let category = null;
+    let item = null;
+
+    before(async () => {
+      const token = await Mutation.login(null, { user: 'category', password: 'test1234' });
+      user = await verify(token);
+      category = await Mutation.createCategory(null, null, { user });
+      item = await Mutation.createCategoryItem(null, { category }, { user });
+    });
+
+    describe('Success', function() {
+      it('Remove item', async function() {
+        const result = await Mutation.removeCategoryItem(null, { id: item, category }, { user });
+        assert.equal(result, true);
+      });
+    });
+
+    describe('Invalid', function() {
+      it('Empty item', async function() {
+        const message = await Mutation.createCategoryItem(null, { category: undefined }, { user }).catch(err => err.message);
+        assert.equal(message, 'Category not found');
+      });
+
+      it('Not exist item', async function() {
+        const message = await Mutation.removeCategoryItem(null, { id: item, category }, { user }).catch(err => err.message);
+        assert.equal(message, 'Category item not found');
+      });
+    });
   });
 });

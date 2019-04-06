@@ -43,4 +43,9 @@ module.exports = {
     if (!user) throw new Error('You are not authenticated!');
     return CategoryItemModel.createItemForCategory(category, user.id);
   },
+
+  removeCategoryItem: async (_, { id, category }, { user }) => {
+    if (!user) throw new Error('You are not authenticated!');
+    return CategoryItemModel.removeCategoryItemById(id, category, user.id);
+  },
 };
