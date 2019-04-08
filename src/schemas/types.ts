@@ -26,6 +26,7 @@ export const CategoryItem = gql`
     # link: [Link]
   }
 `;
+
 /**
  * @member user reference to user.id
  */

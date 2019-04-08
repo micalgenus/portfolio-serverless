@@ -1,7 +1,7 @@
 import DataStore from './index';
 import { CategoryItemTable } from '@/interfaces';
 
-import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItems, getCacheItems } from '@/lib/utils/cache';
+import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItems, getCacheItems, removeCacheItem } from '@/lib/utils/cache';
 
 import UserModel from './User';
 import CategoryModel from './Category';
@@ -96,6 +96,31 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     }
 
     return result;
+  }
+
+  async updateCategoryItem(id: string, category: string, user: string, { name, description }: CategoryItemTable): Promise<CategoryItemTable> {
+    if (!id || !category) throw new Error('Required id and category');
+    if (name === undefined && description === undefined) throw new Error('No information to update');
+
+    const [item] = await this.getItemsByCategory(category, user, [id]);
+    if (!item) throw new Error('Category item not found');
+
+    // Same data as before
+    if (name === item.name && description === item.description) throw new Error('No information to update');
+
+    const updateData = {
+      ...item,
+      name: name === undefined ? item.name : name,
+      description: description === undefined ? item.description : description,
+    };
+
+    // TODO: Update items with transaction
+    const updated = await this.update(id, updateData);
+    if (!updated) throw new Error('Fail category item data update');
+
+    await removeCacheItem(category, getCategoryItemCacheKey);
+
+    return updated;
   }
 
   async updateCategoryItemSequence(category: string, user: string, sequences: { _id: string; sequence: number }[]) {

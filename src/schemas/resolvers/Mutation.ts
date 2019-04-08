@@ -49,6 +49,11 @@ module.exports = {
     return CategoryItemModel.removeCategoryItemById(id, category, user.id);
   },
 
+  updateCategoryItem: async (_, { id, category, item }, { user }) => {
+    if (!user) throw new Error('You are not authenticated!');
+    return CategoryItemModel.updateCategoryItem(id, category, user.id, item);
+  },
+
   updateCategoryItemSequence: async (_, { category, sequences }, { user }) => {
     if (!user) throw new Error('You are not authenticated!');
     return CategoryItemModel.updateCategoryItemSequence(category, user.id, sequences);

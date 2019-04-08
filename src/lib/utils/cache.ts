@@ -5,6 +5,11 @@ export const getUserCacheKey = (id: string) => `user:${id}`;
 export const getCategoryCacheKey = (id: string) => `category:${id}`;
 export const getCategoryItemCacheKey = (id: string) => `categoryItem:${id}`;
 
+/**
+ * @param items Caching data
+ * @param filter Array of _id in items
+ * @return {T[]} Array of filtering data
+ */
 export const returnCacheItemWithFilterOfArrayItems = <T extends TableTemplate>(items: T[], filter?: string[]): T[] => {
   if (!filter) return items;
   return items.filter(c => filter.includes(c._id.toString()));

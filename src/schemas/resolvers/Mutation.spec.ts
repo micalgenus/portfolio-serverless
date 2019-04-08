@@ -428,6 +428,32 @@ describe('GraphQL Mutation', function() {
     });
   });
 
+  describe('updateCategoryItem', function() {
+    let user = null;
+    let category = null;
+    let item = null;
+
+    before(async () => {
+      const token = await Mutation.login(null, { user: 'categoryitem', password: 'test1234' });
+      user = await verify(token);
+      category = await Mutation.createCategory(null, null, { user });
+      item = await Mutation.createCategoryItem(null, { category }, { user });
+    });
+
+    describe('Success', function() {
+      it('Update category item', async function() {
+        const result = !!(await Mutation.updateCategoryItem(null, { id: item, category, item: { name: 'categoryItem' } }, { user }));
+        assert.equal(result, true);
+        const [updated] = await Category.items({ _id: category, user: user.id }, { filter: [item] });
+        assert.deepEqual(updated, { _id: item, category, description: '', name: 'categoryItem', sequence: 1 });
+      });
+    });
+
+    after(async () => {
+      await Mutation.removeCategory(null, { id: category }, { user });
+    });
+  });
+
   describe('updateCategoryItemSequence', function() {
     let token = null;
     let user = null;
