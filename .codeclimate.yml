@@ -3,3 +3,5 @@ exclude_patterns:
   - '**/*.d.ts'
   - '**/*.spec.ts'
   - '**/*.spec.js'
+  - '/src/schemas/resolvers/*.ts'
+  - '/src/tests/**/*.ts'

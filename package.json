@@ -9,7 +9,7 @@
     "postbuild": "graphdoc -s ./dist/schemas/typeDefs.js -o ./docs",
     "deploy": "yarn deploy:gcp",
     "deploy:gcp": "serverless deploy",
-    "test": "NODE_ENV=test mocha ./dist/**/*.spec.js",
+    "test": "NODE_ENV=test mocha ./dist/tests/**/*.spec.js",
     "test:coverage": "nyc --reporter=lcov yarn test",
     "test:coverage:display": "nyc yarn test"
   },
