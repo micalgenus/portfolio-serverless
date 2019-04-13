@@ -56,6 +56,14 @@ describe('Mutation updateCategoryItemSequence', () => {
   });
 
   it('Success', async () => {
+    const before = await requestAsync({
+      query: getCategoriesQuery,
+      variables: { id: 'user', categoryFilter: [category], itemFilter: [item1, item2] },
+      authorization: token,
+    });
+    expect(before).to.have.status(200);
+    assert.deepEqual(before.body.data.getUserInfo.categories[0].items, [{ _id: item1 }, { _id: item2 }]);
+
     const res = await requestAsync({
       query,
       variables: { category, sequences: [{ _id: item1, sequence: 1 }, { _id: item2, sequence: 2 }] },
@@ -64,12 +72,12 @@ describe('Mutation updateCategoryItemSequence', () => {
     expect(res).to.have.status(200);
     assert.equal(res.body.data.updateCategoryItemSequence, true);
 
-    const result = await requestAsync({
+    const after = await requestAsync({
       query: getCategoriesQuery,
       variables: { id: 'user', categoryFilter: [category], itemFilter: [item1, item2] },
       authorization: token,
     });
-    expect(result).to.have.status(200);
-    assert.deepEqual(result.body.data.getUserInfo.categories[0].items, [{ _id: item2 }, { _id: item1 }]);
+    expect(after).to.have.status(200);
+    assert.deepEqual(after.body.data.getUserInfo.categories[0].items, [{ _id: item2 }, { _id: item1 }]);
   });
 });
