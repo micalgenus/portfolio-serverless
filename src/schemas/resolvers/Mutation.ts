@@ -22,6 +22,10 @@ module.exports = {
     }
   },
 
+  rememberMeLogin: async (_, { token }) => {
+    return UserModel.rememberMeLogin(token);
+  },
+
   updateUserInfo: async (_, { username, email, github, linkedin, description }, { user }) => {
     if (!user) throw new Error('You are not authenticated!');
     return UserModel.updateUserInfo(user._id, { username, email, github, linkedin, description });

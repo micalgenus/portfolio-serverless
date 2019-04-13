@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 
 import DataStore from './index';
 import { UserTable } from '@/interfaces';
-import { createToken, encryptDataWithRSA } from '@/controllers/auth';
+import { createToken, encryptDataWithRSA, decrypyDataWithRSA } from '@/controllers/auth';
 
 import { cache, CACHE_EXPIRE } from '@/config';
 import { getUserCacheKey } from '@/lib/utils/cache';
@@ -61,6 +61,10 @@ class UserDatabase extends DataStore<UserTable> {
     return encryptDataWithRSA(JSON.stringify({ user, password }));
   }
 
+  static async decodeRememberMeToken(token): Promise<any> {
+    return JSON.parse(decrypyDataWithRSA(token));
+  }
+
   async rememberMe(user: string, password: string): Promise<string> {
     if (!user) throw new Error('required id');
 
@@ -68,6 +72,16 @@ class UserDatabase extends DataStore<UserTable> {
     else await this.loginById({ id: user, password });
 
     return UserDatabase.createRememberMeToken(user, password);
+  }
+
+  async rememberMeLogin(token: string): Promise<string> {
+    if (!token) throw new Error('Required token');
+
+    const decoded = await UserDatabase.decodeRememberMeToken(token);
+    if (!decoded) throw new Error('Invalid token');
+
+    const { user, password } = decoded;
+    return this.login({ user, password });
   }
 
   static async compareUserPasswordAndLogin(user, password = null): Promise<string> {
