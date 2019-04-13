@@ -1,55 +1,14 @@
 import jwt from 'jsonwebtoken';
-import nodeRsa from 'node-rsa';
-
 import { RSA } from '@/config';
 
-const { PRIVATE_KEY, PUBLIC_KEY } = RSA;
-const JWT_PREFIX = 'bearer';
+import { isCanEncryptAndDecryptWithRsa, encryptDataWithRSA, decrypyDataWithRSA } from './index';
 
+const JWT_PREFIX = 'bearer';
 const ignoreJwtErrors = ['TokenExpiredError'];
 
-// isCanEncryptAndDecryptJwtWithRsa is singleton pattern (return boolean)
-const isCanEncryptAndDecryptJwtWithRsa = (() => {
-  if (!PRIVATE_KEY || !PUBLIC_KEY) return false;
-  const originalText = 'RSA Test Text !!';
-
-  // Create RSA objects
-  const privateKey = nodeRsa(PRIVATE_KEY);
-  const publicKey = nodeRsa(PUBLIC_KEY);
-
-  // Check valid keys.
-  if (privateKey.isEmpty() || publicKey.isEmpty() || !privateKey.isPrivate() || !publicKey.isPublic()) return false;
-
-  const encryptedText = publicKey.encrypt(originalText);
-  const decryptedText = privateKey.decrypt(encryptedText).toString();
-
-  // Check valid RSA
-  if (encryptedText.toString() === decryptedText || originalText !== decryptedText) return false;
-  console.log('Success loading RSA encrypt module.');
-  return true;
-})();
-
-const encryptJwtWithRSA = token => {
-  if (!token) return null;
-  const publicKey = nodeRsa(PUBLIC_KEY);
-
-  return publicKey.encrypt(token, 'base64');
-};
-
-const decrypyJwtWithRSA = token => {
-  if (!token) return null;
-  const privateKey = nodeRsa(PRIVATE_KEY);
-
-  try {
-    return privateKey.decrypt(token).toString();
-  } catch (err) {
-    return null;
-  }
-};
-
-const encryptJwt = isCanEncryptAndDecryptJwtWithRsa ? encryptJwtWithRSA : token => token;
-const decryptJwt = isCanEncryptAndDecryptJwtWithRsa ? decrypyJwtWithRSA : token => token;
-const JWT_KEY = PRIVATE_KEY || Math.random().toString();
+const encryptJwt = isCanEncryptAndDecryptWithRsa ? encryptDataWithRSA : token => token;
+const decryptJwt = isCanEncryptAndDecryptWithRsa ? decrypyDataWithRSA : token => token;
+const JWT_KEY = RSA.PRIVATE_KEY || Math.random().toString();
 
 export const createToken = async ({ iat = null, exp = null, ...data }: any) => {
   return [JWT_PREFIX, encryptJwt(jwt.sign({ ...data }, JWT_KEY, { expiresIn: '1d' }))].join(' ');
