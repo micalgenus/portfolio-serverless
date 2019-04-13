@@ -14,6 +14,14 @@ module.exports = {
     throw new Error('user, id or email is required');
   },
 
+  rememberMe: async (_, { user, id, email, password }) => {
+    try {
+      return await UserModel.rememberMe(user || id || email || '', password);
+    } catch (err) {
+      return null;
+    }
+  },
+
   updateUserInfo: async (_, { username, email, github, linkedin, description }, { user }) => {
     if (!user) throw new Error('You are not authenticated!');
     return UserModel.updateUserInfo(user._id, { username, email, github, linkedin, description });

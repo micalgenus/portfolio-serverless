@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import { requestAsync, expect, gql } from './config';
 import { loginQuery } from './query';
 
-import './13-mutation.removeCategoryItem.spec';
+import './14-mutation.updateCategoryItem.spec';
 
 const createCategoryQuery = gql`
   mutation {

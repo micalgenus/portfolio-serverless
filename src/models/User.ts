@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 
 import DataStore from './index';
 import { UserTable } from '@/interfaces';
-import { createToken } from '@/controllers/auth';
+import { createToken, encryptDataWithRSA } from '@/controllers/auth';
 
 import { cache, CACHE_EXPIRE } from '@/config';
 import { getUserCacheKey } from '@/lib/utils/cache';
@@ -55,6 +55,19 @@ class UserDatabase extends DataStore<UserTable> {
     UserDatabase.updateCacheItem(id, newUser);
 
     return UserDatabase.createJwtToken({ ...newUser });
+  }
+
+  static async createRememberMeToken(user, password): Promise<string> {
+    return encryptDataWithRSA(JSON.stringify({ user, password }));
+  }
+
+  async rememberMe(user: string, password: string): Promise<string> {
+    if (!user) throw new Error('required id');
+
+    if (UserUtils.checkValidEmail(user)) await this.loginByEmail({ email: user, password });
+    else await this.loginById({ id: user, password });
+
+    return UserDatabase.createRememberMeToken(user, password);
   }
 
   static async compareUserPasswordAndLogin(user, password = null): Promise<string> {
