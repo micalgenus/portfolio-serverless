@@ -11,15 +11,20 @@
     "deploy:gcp": "serverless deploy",
     "test": "NODE_ENV=test mocha ./dist/tests/**/*.spec.js",
     "test:coverage": "nyc --reporter=lcov yarn test",
-    "test:coverage:display": "nyc yarn test"
+    "test:coverage:display": "nyc yarn test",
+    "test:ts": "NODE_ENV=test mocha -r ./mocha.init.js ./src/tests/**/*.spec.ts",
+    "test:ts:coverage": "nyc --reporter=lcov yarn test",
+    "test:ts:coverage:display": "nyc yarn test"
   },
   "author": "micalgenus.com",
   "license": "MIT",
   "devDependencies": {
+    "@2fd/graphdoc": "^2.4.0",
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.4.0",
     "@babel/preset-env": "^7.4.2",
     "@babel/preset-typescript": "^7.3.3",
+    "@babel/register": "^7.4.0",
     "@types/dotenv": "^6.1.1",
     "@types/mocha": "^5.2.6",
     "babel-plugin-module-resolver": "^3.2.0",
@@ -33,11 +38,9 @@
     "typescript": "^3.4.1"
   },
   "dependencies": {
-    "@2fd/graphdoc": "^2.4.0",
     "@google-cloud/datastore": "^3.1.2",
     "apollo-server-express": "^2.4.8",
     "bcrypt": "^3.0.5",
-    "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",

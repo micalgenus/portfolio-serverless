@@ -7,7 +7,7 @@ import { makeExecutableSchema } from 'graphql-tools';
 import typeDefs from './typeDefs';
 
 const RESOLVER_DIR = 'resolvers';
-const RESOLVER_EXT = '.js';
+const RESOLVER_EXT = path.extname(__filename);
 const REMOVE_FILES = ['.spec'];
 
 // rs = require(resolvers/*.js) (without extension)

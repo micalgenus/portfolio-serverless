@@ -29,7 +29,7 @@ before_script:
 
 script:
   - yarn test
-  - yarn test:coverage
+  - yarn test:ts:coverage
   - docker build -t micalgenus/portfolio-serverless-docs:develop .
 
 deploy:
