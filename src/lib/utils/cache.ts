@@ -20,13 +20,7 @@ export const updateCacheItem = async <T extends TableTemplate>(id: string, items
   return result === 'OK';
 };
 
-export const getCacheItem = async <T extends TableTemplate>(id: string, getKey: (id: string) => string): Promise<T> => {
-  const data = await cache.get(getKey(id)).catch(() => null);
-  if (data) return JSON.parse(data);
-  return null;
-};
-
-export const getCacheItems = async <T extends TableTemplate>(id: string, getKey: (id: string) => string): Promise<T[]> => {
+export const getCacheItem = async <T extends TableTemplate | Array<TableTemplate>>(id: string, getKey: (id: string) => string): Promise<T> => {
   const data = await cache.get(getKey(id)).catch(() => null);
   if (data) return JSON.parse(data);
   return null;

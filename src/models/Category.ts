@@ -1,7 +1,7 @@
 import DataStore from './index';
 import { CategoryTable } from '@/interfaces';
 
-import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItems, removeCacheItem } from '@/lib/utils/cache';
+import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
 
 import UserModel from './User';
@@ -47,7 +47,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   async getCategoryByUserId(user: string, filter?: string[]) {
     if (!user) throw new Error('Required user');
 
-    const cacheItem = await getCacheItems<CategoryTable>(user, getCategoryCacheKey);
+    const cacheItem = await getCacheItem<CategoryTable[]>(user, getCategoryCacheKey);
     if (cacheItem) return returnCacheItemWithFilterOfArrayItems(cacheItem, filter);
 
     const existUser = await UserModel.getUserInfoById(user);

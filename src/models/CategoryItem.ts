@@ -1,7 +1,7 @@
 import DataStore from './index';
 import { CategoryItemTable } from '@/interfaces';
 
-import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItems, removeCacheItem } from '@/lib/utils/cache';
+import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 
 import UserModel from './User';
 import CategoryModel from './Category';
@@ -56,7 +56,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     const [existCategory] = await CategoryModel.getCategoryByUserId(user, [category]);
     if (!existCategory) throw new Error('Category not found');
 
-    const cacheItem = await getCacheItems<CategoryItemTable>(category, getCategoryItemCacheKey);
+    const cacheItem = await getCacheItem<CategoryItemTable[]>(category, getCategoryItemCacheKey);
     if (cacheItem) return returnCacheItemWithFilterOfArrayItems(cacheItem, filter);
 
     let { entities: items } = await this.find([{ key: 'category', op: '=', value: existCategory._id }], 'sequence', true);
