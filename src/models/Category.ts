@@ -1,7 +1,7 @@
 import DataStore from './index';
 import { CategoryTable } from '@/interfaces';
 
-import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItems, getCacheItems, removeCacheItem } from '@/lib/utils/cache';
+import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItems, removeCacheItem } from '@/lib/utils/cache';
 import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
 
 import UserModel from './User';
@@ -38,7 +38,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
       categories,
       id => this.read(id),
       (id, data) => this.update(id, data),
-      (id, items) => updateCacheItems(id, items, getCategoryCacheKey)
+      (id, items) => updateCacheItem(id, items, getCategoryCacheKey)
     );
 
     return _id;
@@ -56,7 +56,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     let { entities: categories } = await this.find([{ key: 'user', op: '=', value: user }], 'sequence', true);
     if (filter) categories = categories.filter(p => filter.includes(p._id.toString()));
 
-    if (!filter) await updateCacheItems(user, categories, getCategoryCacheKey);
+    if (!filter) await updateCacheItem(user, categories, getCategoryCacheKey);
 
     return categories || [];
   }
@@ -115,7 +115,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
       categories,
       id => this.read(id),
       (id, data) => this.update(id, data),
-      (id, items) => updateCacheItems(id, items, getCategoryCacheKey)
+      (id, items) => updateCacheItem(id, items, getCategoryCacheKey)
     );
     return true;
   }
@@ -147,7 +147,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
         categories,
         id => this.read(id),
         (id, data) => this.update(id, data),
-        (id, items) => updateCacheItems(id, items, getCategoryCacheKey)
+        (id, items) => updateCacheItem(id, items, getCategoryCacheKey)
       );
     }
 

@@ -4,8 +4,7 @@ import DataStore from './index';
 import { UserTable } from '@/interfaces';
 import { createToken, encryptDataWithRSA, decrypyDataWithRSA } from '@/controllers/auth';
 
-import { cache, CACHE_EXPIRE } from '@/config';
-import { getUserCacheKey } from '@/lib/utils/cache';
+import { getUserCacheKey, updateCacheItem, getCacheItem } from '@/lib/utils/cache';
 
 import { checkEmptyItems } from '@/lib/utils';
 import * as UserUtils from '@/lib/utils/user';
@@ -13,17 +12,6 @@ import * as UserUtils from '@/lib/utils/user';
 class UserDatabase extends DataStore<UserTable> {
   constructor() {
     super('user');
-  }
-
-  static async updateCacheItem(id: string, info: UserTable) {
-    const { _id, password, ...userInfo } = info;
-    return cache.set(getUserCacheKey(id), JSON.stringify(userInfo), 'EX', CACHE_EXPIRE);
-  }
-
-  static async getCacheItem(id): Promise<UserTable> {
-    const data = await cache.get(getUserCacheKey(id)).catch(() => null);
-    if (data) return JSON.parse(data);
-    return null;
   }
 
   static async createJwtToken({ _id, id, email, username }: UserTable): Promise<string> {
@@ -52,7 +40,7 @@ class UserDatabase extends DataStore<UserTable> {
     // Create user
     const newUser = await this.create({ id, email, username, password: await bcrypt.hash(password, 10) });
 
-    UserDatabase.updateCacheItem(id, newUser);
+    updateCacheItem(id, newUser, getUserCacheKey);
 
     return UserDatabase.createJwtToken({ ...newUser });
   }
@@ -123,7 +111,7 @@ class UserDatabase extends DataStore<UserTable> {
     const userinfo = await this.read(_id);
     if (!userinfo) throw new Error('User not found');
 
-    UserDatabase.updateCacheItem(userinfo.id, userinfo);
+    updateCacheItem(userinfo.id, userinfo, getUserCacheKey);
 
     return userinfo;
   }
@@ -131,13 +119,13 @@ class UserDatabase extends DataStore<UserTable> {
   async getUserInfoById(id): Promise<UserTable> {
     if (!id) throw new Error('Required id');
 
-    const cacheItem = await UserDatabase.getCacheItem(id);
+    const cacheItem = await getCacheItem<UserTable>(id, getUserCacheKey);
     if (cacheItem) return cacheItem;
 
     const { entities: existUser } = await this.find([{ key: 'id', op: '=', value: id }]);
     if (!existUser.length) throw new Error('User not found');
 
-    UserDatabase.updateCacheItem(existUser[0].id, existUser[0]);
+    updateCacheItem(existUser[0].id, existUser[0], getUserCacheKey);
 
     return existUser[0] || { id: undefined, email: undefined, username: undefined, password: undefined };
   }
@@ -179,7 +167,7 @@ class UserDatabase extends DataStore<UserTable> {
     const updateInfo = await this.update(id, updateData);
     if (!updateInfo) throw new Error('Fail user data update');
 
-    UserDatabase.updateCacheItem(updateInfo.id, updateInfo);
+    updateCacheItem(updateInfo.id, updateInfo, getUserCacheKey);
 
     return updateInfo;
   }

@@ -15,9 +15,15 @@ export const returnCacheItemWithFilterOfArrayItems = <T extends TableTemplate>(i
   return items.filter(c => filter.includes(c._id.toString()));
 };
 
-export const updateCacheItems = async <T extends TableTemplate>(id: string, items: T[], getKey: (id: string) => string): Promise<boolean> => {
+export const updateCacheItem = async <T extends TableTemplate>(id: string, items: T | T[], getKey: (id: string) => string): Promise<boolean> => {
   const result = await cache.set(getKey(id), JSON.stringify(items), 'EX', CACHE_EXPIRE);
   return result === 'OK';
+};
+
+export const getCacheItem = async <T extends TableTemplate>(id: string, getKey: (id: string) => string): Promise<T> => {
+  const data = await cache.get(getKey(id)).catch(() => null);
+  if (data) return JSON.parse(data);
+  return null;
 };
 
 export const getCacheItems = async <T extends TableTemplate>(id: string, getKey: (id: string) => string): Promise<T[]> => {
