@@ -16,6 +16,16 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
   //                                Methods                                //
   ///////////////////////////////////////////////////////////////////////////
 
+  async updateItemsOrder(category: string, items: CategoryItemTable[]) {
+    return updateItemsOrder(
+      category,
+      items,
+      id => this.read(id),
+      (id, data) => this.update(id, data),
+      (id, items) => updateCacheItem(id, items, getCategoryItemCacheKey)
+    );
+  }
+
   /**
    *
    * @param category category._id
@@ -39,13 +49,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     if (!_id) throw new Error('Failed create category item');
 
     const items = [...beforeItems, { _id: _id, ...createCategoryItem }];
-    await updateItemsOrder(
-      category,
-      items,
-      id => this.read(id),
-      (id, data) => this.update(id, data),
-      (id, items) => updateCacheItem(id, items, getCategoryItemCacheKey)
-    );
+    await this.updateItemsOrder(category, items);
 
     return _id;
   }
@@ -86,13 +90,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
 
     if (result) {
       const items = (await this.getItemsByCategory(category, user)).filter(c => c._id.toString() !== id);
-      await updateItemsOrder(
-        category,
-        items,
-        id => this.read(id),
-        (id, data) => this.update(id, data),
-        (id, data) => updateCacheItem(id, data, getCategoryItemCacheKey)
-      );
+      await this.updateItemsOrder(category, items);
     }
 
     return result;
@@ -144,13 +142,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     }
 
     items.sort((a, b) => b.sequence - a.sequence);
-    await updateItemsOrder(
-      category,
-      items,
-      id => this.read(id),
-      (id, data) => this.update(id, data),
-      (id, data) => updateCacheItem(id, data, getCategoryItemCacheKey)
-    );
+    await this.updateItemsOrder(category, items);
     return true;
   }
 }

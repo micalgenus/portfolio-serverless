@@ -16,6 +16,16 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   //                                Methods                                //
   ///////////////////////////////////////////////////////////////////////////
 
+  async updateItemsOrder(user: string, categories: CategoryTable[]) {
+    return updateItemsOrder(
+      user,
+      categories,
+      id => this.read(id),
+      (id, data) => this.update(id, data),
+      (id, items) => updateCacheItem(id, items, getCategoryCacheKey)
+    );
+  }
+
   /**
    * @param user from user._id
    * @return {string} category._id
@@ -33,13 +43,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     if (!_id) throw new Error('Failed create category');
 
     const categories = [...beforeCategories, { _id: _id, ...createCategory }];
-    await updateItemsOrder(
-      user,
-      categories,
-      id => this.read(id),
-      (id, data) => this.update(id, data),
-      (id, items) => updateCacheItem(id, items, getCategoryCacheKey)
-    );
+    await this.updateItemsOrder(user, categories);
 
     return _id;
   }
@@ -110,13 +114,8 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     }
 
     categories.sort((a, b) => b.sequence - a.sequence);
-    await updateItemsOrder(
-      user,
-      categories,
-      id => this.read(id),
-      (id, data) => this.update(id, data),
-      (id, items) => updateCacheItem(id, items, getCategoryCacheKey)
-    );
+    await this.updateItemsOrder(user, categories);
+
     return true;
   }
 
@@ -142,13 +141,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
 
     if (result) {
       const categories = (await this.getCategoryByUserId(user)).filter(c => c._id.toString() !== id);
-      await updateItemsOrder(
-        user,
-        categories,
-        id => this.read(id),
-        (id, data) => this.update(id, data),
-        (id, items) => updateCacheItem(id, items, getCategoryCacheKey)
-      );
+      await this.updateItemsOrder(user, categories);
     }
 
     return result;
