@@ -41,6 +41,10 @@ functions:
     handler: graphql
     events:
       - http: POST graphql
+  oauth:
+    handler: oauth
+    events:
+      - http: POST oauth
   # NOTE: the following uses an "event" event (pubSub event in this case).
   # Please create the corresponding resources in the Google Cloud
   # before deploying this service through Serverless

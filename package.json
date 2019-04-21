@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@google-cloud/datastore": "^3.1.2",
+    "@types/request-promise": "^4.1.42",
     "apollo-server-express": "^2.4.8",
     "bcrypt": "^3.0.5",
     "cors": "^2.8.5",
@@ -50,6 +51,8 @@
     "ioredis-mock": "^4.9.0",
     "jsonwebtoken": "^8.5.1",
     "nedb": "^1.8.0",
-    "node-rsa": "^1.0.5"
+    "node-rsa": "^1.0.5",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
   }
 }
