@@ -1,7 +1,7 @@
-import { request } from './config';
+import { requestAsync } from './config';
 
 describe('GraphQL', () => {
-  it('GraphQL launch with type check', done => {
-    request({ query: {} }, () => done());
+  it('GraphQL launch with type check', async () => {
+    await requestAsync({ query: {} });
   }).timeout(10000);
 });

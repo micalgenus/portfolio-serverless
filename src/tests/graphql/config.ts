@@ -7,7 +7,6 @@ chai.use(chaiHttp);
 chai.should();
 
 type Response = any;
-type CallbackHandler = (err: any, res: Response) => void;
 
 interface chaiRequest {
   query: any;
@@ -17,12 +16,6 @@ interface chaiRequest {
 
 export const expect = chai.expect;
 export const gql = (query: TemplateStringsArray) => query.join('');
-export const request = ({ query, variables }: chaiRequest, callback: CallbackHandler) =>
-  chai
-    .request(graphql)
-    .post('/')
-    .send({ query, variables })
-    .end(callback);
 
 export const requestAsync = ({ query, variables, authorization }: chaiRequest) => {
   return new Promise<Response>((resolve, reject) => {
