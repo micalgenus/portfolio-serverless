@@ -1,6 +1,7 @@
 import { assert } from 'chai';
 
-import { requestAsync, expect, gql } from './config';
+import { expect, gql } from '@/tests/config';
+import { graphQLAsync } from '@/tests/http';
 import { loginQuery } from './query';
 
 import './02-mutation.login.spec';
@@ -22,12 +23,12 @@ describe('Query me', () => {
   let token = null;
 
   before(async () => {
-    const res = await requestAsync({ query: loginQuery, variables: { id: 'user', password: 'user1234' } });
+    const res = await graphQLAsync({ query: loginQuery, variables: { id: 'user', password: 'user1234' } });
     token = res.body.data.login;
   });
 
   it('Success', async () => {
-    const res = await requestAsync({ query, authorization: token });
+    const res = await graphQLAsync({ query, authorization: token });
     expect(res).to.have.status(200);
 
     assert.deepEqual(res.body.data.me, { id: 'user', username: 'user', email: 'user@gmail.com', github: null, linkedin: null, description: null });
@@ -35,7 +36,7 @@ describe('Query me', () => {
 
   describe('Invalid', () => {
     it('Empty authorization token', async () => {
-      const res = await requestAsync({ query });
+      const res = await graphQLAsync({ query });
       expect(res).to.have.status(200);
 
       expect(res.body.data.me).to.be.null;

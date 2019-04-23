@@ -1,7 +1,8 @@
 import { assert } from 'chai';
 import { verify } from '@/controllers/auth/jwt';
 
-import { requestAsync, expect, gql } from './config';
+import { expect, gql } from '@/tests/config';
+import { graphQLAsync } from '@/tests/http';
 
 import './01-mutation.singup.spec';
 
@@ -14,41 +15,41 @@ const query = gql`
 describe('Mutation login', () => {
   describe('Success', () => {
     it('user(id)', async () => {
-      const res = await requestAsync({ query, variables: { user: 'user', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { user: 'user', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       const { _id, iat, exp, ...user } = await verify(res.body.data.login);
-      assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com' });
+      assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com', type: 'LOCAL' });
     });
 
     it('user(email)', async () => {
-      const res = await requestAsync({ query, variables: { user: 'user@gmail.com', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { user: 'user@gmail.com', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       const { _id, iat, exp, ...user } = await verify(res.body.data.login);
-      assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com' });
+      assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com', type: 'LOCAL' });
     });
 
     it('id', async () => {
-      const res = await requestAsync({ query, variables: { id: 'user', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { id: 'user', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       const { _id, iat, exp, ...user } = await verify(res.body.data.login);
-      assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com' });
+      assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com', type: 'LOCAL' });
     });
 
     it('email', async () => {
-      const res = await requestAsync({ query, variables: { email: 'user@gmail.com', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { email: 'user@gmail.com', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       const { _id, iat, exp, ...user } = await verify(res.body.data.login);
-      assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com' });
+      assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com', type: 'LOCAL' });
     });
   });
 
   describe('Invalid items', () => {
     it('id', async () => {
-      const res = await requestAsync({ query, variables: { id: 'invalid', password: 'invalid1234' } });
+      const res = await graphQLAsync({ query, variables: { id: 'invalid', password: 'invalid1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.login).to.be.null;
@@ -56,7 +57,7 @@ describe('Mutation login', () => {
     });
 
     it('Invalid email format', async () => {
-      const res = await requestAsync({ query, variables: { email: 'invalid', password: 'invalid1234' } });
+      const res = await graphQLAsync({ query, variables: { email: 'invalid', password: 'invalid1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.login).to.be.null;
@@ -64,7 +65,7 @@ describe('Mutation login', () => {
     });
 
     it('Not exist email', async () => {
-      const res = await requestAsync({ query, variables: { email: 'invalid@invalid.com', password: 'invalid1234' } });
+      const res = await graphQLAsync({ query, variables: { email: 'invalid@invalid.com', password: 'invalid1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.login).to.be.null;
@@ -72,7 +73,7 @@ describe('Mutation login', () => {
     });
 
     it('password', async () => {
-      const res = await requestAsync({ query, variables: { id: 'user', password: 'invalid1234' } });
+      const res = await graphQLAsync({ query, variables: { id: 'user', password: 'invalid1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.login).to.be.null;
@@ -82,7 +83,7 @@ describe('Mutation login', () => {
 
   describe('Empty items', () => {
     it('Arguments', async () => {
-      const res = await requestAsync({ query, variables: { user: '', password: 'invalid1234' } });
+      const res = await graphQLAsync({ query, variables: { user: '', password: 'invalid1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.login).to.be.null;
@@ -90,7 +91,7 @@ describe('Mutation login', () => {
     });
 
     it('password', async () => {
-      const res = await requestAsync({ query, variables: { id: 'user', password: '' } });
+      const res = await graphQLAsync({ query, variables: { id: 'user', password: '' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.login).to.be.null;

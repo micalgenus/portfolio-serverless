@@ -1,6 +1,7 @@
 import { assert } from 'chai';
 
-import { requestAsync, expect, gql } from './config';
+import { expect, gql } from '@/tests/config';
+import { graphQLAsync } from '@/tests/http';
 import { loginQuery, signupQuery } from './query';
 
 import './04-query.getUserInfo.spec';
@@ -23,12 +24,12 @@ describe('Mutation updateUserInfo', () => {
     let token = null;
 
     before(async () => {
-      const res = await requestAsync({ query: loginQuery, variables: { id: 'user', password: 'user1234' } });
+      const res = await graphQLAsync({ query: loginQuery, variables: { id: 'user', password: 'user1234' } });
       token = res.body.data.login;
     });
 
     it('Success', async () => {
-      const res = await requestAsync({ query, variables: { email: 'user2@gmail.com', description: 'description' }, authorization: token });
+      const res = await graphQLAsync({ query, variables: { email: 'user2@gmail.com', description: 'description' }, authorization: token });
       expect(res).to.have.status(200);
 
       assert.deepEqual(res.body.data.updateUserInfo, {
@@ -42,14 +43,14 @@ describe('Mutation updateUserInfo', () => {
     });
 
     it('Update to empty value', async () => {
-      const res = await requestAsync({ query, variables: { email: '', description: '' }, authorization: token });
+      const res = await graphQLAsync({ query, variables: { email: '', description: '' }, authorization: token });
       expect(res).to.have.status(200);
 
       assert.deepEqual(res.body.data.updateUserInfo, { id: 'user', username: 'user', email: '', github: '', linkedin: '', description: '' });
     });
 
     after(async () => {
-      await requestAsync({ query, variables: { email: 'user@gmail.com', description: 'description' }, authorization: token });
+      await graphQLAsync({ query, variables: { email: 'user@gmail.com', description: 'description' }, authorization: token });
     });
   });
 
@@ -57,15 +58,15 @@ describe('Mutation updateUserInfo', () => {
     let token = null;
 
     before(async () => {
-      await requestAsync({ query: signupQuery, variables: { id: 'readonly', username: 'readonly', email: 'readonly@gmail.com', password: 'readonly1234' } });
+      await graphQLAsync({ query: signupQuery, variables: { id: 'readonly', username: 'readonly', email: 'readonly@gmail.com', password: 'readonly1234' } });
 
-      const res = await requestAsync({ query: loginQuery, variables: { id: 'readonly', password: 'readonly1234' } });
+      const res = await graphQLAsync({ query: loginQuery, variables: { id: 'readonly', password: 'readonly1234' } });
       token = res.body.data.login;
     });
 
     describe('Empty items', () => {
       it('User object', async () => {
-        const res = await requestAsync({ query, variables: {} });
+        const res = await graphQLAsync({ query, variables: {} });
         expect(res).to.have.status(200);
 
         expect(res.body.data.updateUserInfo).to.be.null;
@@ -73,7 +74,7 @@ describe('Mutation updateUserInfo', () => {
       });
 
       it('Information', async () => {
-        const res = await requestAsync({ query, variables: {}, authorization: token });
+        const res = await graphQLAsync({ query, variables: {}, authorization: token });
         expect(res).to.have.status(200);
 
         expect(res.body.data.updateUserInfo).to.be.null;
@@ -81,7 +82,7 @@ describe('Mutation updateUserInfo', () => {
       });
 
       it('username', async () => {
-        const res = await requestAsync({ query, variables: { username: '' }, authorization: token });
+        const res = await graphQLAsync({ query, variables: { username: '' }, authorization: token });
         expect(res).to.have.status(200);
 
         expect(res.body.data.updateUserInfo).to.be.null;
@@ -90,7 +91,7 @@ describe('Mutation updateUserInfo', () => {
     });
 
     it('Already exist email', async () => {
-      const res = await requestAsync({ query, variables: { email: 'user@gmail.com' }, authorization: token });
+      const res = await graphQLAsync({ query, variables: { email: 'user@gmail.com' }, authorization: token });
       expect(res).to.have.status(200);
 
       expect(res.body.data.updateUserInfo).to.be.null;
@@ -98,7 +99,7 @@ describe('Mutation updateUserInfo', () => {
     });
 
     it('Same data as before', async () => {
-      const res = await requestAsync({ query, variables: { username: 'readonly', email: 'readonly@gmail.com' }, authorization: token });
+      const res = await graphQLAsync({ query, variables: { username: 'readonly', email: 'readonly@gmail.com' }, authorization: token });
       expect(res).to.have.status(200);
 
       expect(res.body.data.updateUserInfo).to.be.null;
@@ -106,7 +107,7 @@ describe('Mutation updateUserInfo', () => {
     });
 
     it('Invalid email format', async () => {
-      const res = await requestAsync({ query, variables: { username: 'readonly', email: 'read@only@gmail.com' }, authorization: token });
+      const res = await graphQLAsync({ query, variables: { username: 'readonly', email: 'read@only@gmail.com' }, authorization: token });
       expect(res).to.have.status(200);
 
       expect(res.body.data.updateUserInfo).to.be.null;

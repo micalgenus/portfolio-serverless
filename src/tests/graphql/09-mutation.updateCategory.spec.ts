@@ -1,6 +1,7 @@
 import { assert } from 'chai';
 
-import { requestAsync, expect, gql } from './config';
+import { expect, gql } from '@/tests/config';
+import { graphQLAsync } from '@/tests/http';
 import { loginQuery } from './query';
 
 import './08-mutation.removeCategory.spec';
@@ -25,15 +26,15 @@ describe('Mutation updateCategory', () => {
   let category = null;
 
   before(async () => {
-    const res = await requestAsync({ query: loginQuery, variables: { id: 'user', password: 'user1234' } });
+    const res = await graphQLAsync({ query: loginQuery, variables: { id: 'user', password: 'user1234' } });
     token = res.body.data.login;
 
-    const result = await requestAsync({ query: createCategoryQuery, authorization: token });
+    const result = await graphQLAsync({ query: createCategoryQuery, authorization: token });
     category = result.body.data.createCategory;
   });
 
   it('Success', async () => {
-    const res = await requestAsync({ query, variables: { id: category, category: { name: 'category' } }, authorization: token });
+    const res = await graphQLAsync({ query, variables: { id: category, category: { name: 'category' } }, authorization: token });
     expect(res).to.have.status(200);
 
     assert.deepEqual(res.body.data.updateCategory, { user: 'user', name: 'category' });
@@ -41,7 +42,7 @@ describe('Mutation updateCategory', () => {
 
   describe('Invalid', () => {
     it('Empty items', async () => {
-      const res = await requestAsync({ query, variables: { id: category, category: {} }, authorization: token });
+      const res = await graphQLAsync({ query, variables: { id: category, category: {} }, authorization: token });
       expect(res).to.have.status(200);
 
       expect(res.body.data.updateCategory).to.be.null;
@@ -49,7 +50,7 @@ describe('Mutation updateCategory', () => {
     });
 
     it('Permission deined', async () => {
-      const res = await requestAsync({ query, variables: { id: category, category: { name: 'category' } } });
+      const res = await graphQLAsync({ query, variables: { id: category, category: { name: 'category' } } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.updateCategory).to.be.null;
@@ -57,7 +58,7 @@ describe('Mutation updateCategory', () => {
     });
 
     it('Not exist', async () => {
-      const res = await requestAsync({ query, variables: { id: '-1', category: { name: 'category' } }, authorization: token });
+      const res = await graphQLAsync({ query, variables: { id: '-1', category: { name: 'category' } }, authorization: token });
       expect(res).to.have.status(200);
 
       expect(res.body.data.updateCategory).to.be.null;

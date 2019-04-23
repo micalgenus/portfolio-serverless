@@ -1,6 +1,7 @@
 import { assert } from 'chai';
 
-import { requestAsync, expect, gql } from './config';
+import { expect, gql } from '@/tests/config';
+import { graphQLAsync } from '@/tests/http';
 import { loginQuery } from './query';
 
 import './14-mutation.updateCategoryItem.spec';
@@ -42,21 +43,21 @@ describe('Mutation updateCategoryItemSequence', () => {
   let item2 = null;
 
   before(async () => {
-    const res = await requestAsync({ query: loginQuery, variables: { id: 'user', password: 'user1234' } });
+    const res = await graphQLAsync({ query: loginQuery, variables: { id: 'user', password: 'user1234' } });
     token = res.body.data.login;
 
-    const result = await requestAsync({ query: createCategoryQuery, authorization: token });
+    const result = await graphQLAsync({ query: createCategoryQuery, authorization: token });
     category = result.body.data.createCategory;
 
-    const res1 = await requestAsync({ query: createCategoryItemQuery, variables: { category }, authorization: token });
-    const res2 = await requestAsync({ query: createCategoryItemQuery, variables: { category }, authorization: token });
+    const res1 = await graphQLAsync({ query: createCategoryItemQuery, variables: { category }, authorization: token });
+    const res2 = await graphQLAsync({ query: createCategoryItemQuery, variables: { category }, authorization: token });
 
     item1 = res1.body.data.createCategoryItem;
     item2 = res2.body.data.createCategoryItem;
   });
 
   it('Success', async () => {
-    const before = await requestAsync({
+    const before = await graphQLAsync({
       query: getCategoriesQuery,
       variables: { id: 'user', categoryFilter: [category], itemFilter: [item1, item2] },
       authorization: token,
@@ -64,7 +65,7 @@ describe('Mutation updateCategoryItemSequence', () => {
     expect(before).to.have.status(200);
     assert.deepEqual(before.body.data.getUserInfo.categories[0].items, [{ _id: item1 }, { _id: item2 }]);
 
-    const res = await requestAsync({
+    const res = await graphQLAsync({
       query,
       variables: { category, sequences: [{ _id: item1, sequence: 1 }, { _id: item2, sequence: 2 }] },
       authorization: token,
@@ -72,7 +73,7 @@ describe('Mutation updateCategoryItemSequence', () => {
     expect(res).to.have.status(200);
     assert.equal(res.body.data.updateCategoryItemSequence, true);
 
-    const after = await requestAsync({
+    const after = await graphQLAsync({
       query: getCategoriesQuery,
       variables: { id: 'user', categoryFilter: [category], itemFilter: [item1, item2] },
       authorization: token,

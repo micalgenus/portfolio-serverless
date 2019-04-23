@@ -1,4 +1,4 @@
-import { gql } from './config';
+import { gql } from '@/tests/config';
 
 export const signupQuery = gql`
   mutation signup($id: String!, $username: String!, $email: String!, $password: String!) {

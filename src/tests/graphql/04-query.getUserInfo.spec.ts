@@ -1,6 +1,7 @@
 import { assert } from 'chai';
 
-import { requestAsync, expect, gql } from './config';
+import { expect, gql } from '@/tests/config';
+import { graphQLAsync } from '@/tests/http';
 
 import './03-query.me.spec';
 
@@ -19,7 +20,7 @@ const query = gql`
 
 describe('Query getUserInfo', () => {
   it('Success', async () => {
-    const res = await requestAsync({ query, variables: { id: 'user' } });
+    const res = await graphQLAsync({ query, variables: { id: 'user' } });
     expect(res).to.have.status(200);
 
     assert.deepEqual(res.body.data.getUserInfo, { id: 'user', username: 'user', email: 'user@gmail.com', github: null, linkedin: null, description: null });
@@ -27,7 +28,7 @@ describe('Query getUserInfo', () => {
 
   describe('Invalid', () => {
     it('Get not exist user info', async () => {
-      const res = await requestAsync({ query, variables: { id: 'notexist' } });
+      const res = await graphQLAsync({ query, variables: { id: 'notexist' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.getUserInfo).to.be.null;
@@ -35,7 +36,7 @@ describe('Query getUserInfo', () => {
     });
 
     it('Get not exist user info', async () => {
-      const res = await requestAsync({ query, variables: { id: '' } });
+      const res = await graphQLAsync({ query, variables: { id: '' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.getUserInfo).to.be.null;

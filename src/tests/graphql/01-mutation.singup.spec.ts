@@ -1,7 +1,8 @@
 import { assert } from 'chai';
 import { verify } from '@/controllers/auth/jwt';
 
-import { requestAsync, expect, gql } from './config';
+import { expect, gql } from '@/tests/config';
+import { graphQLAsync } from '@/tests/http';
 
 import './00-graphql.spec';
 
@@ -13,18 +14,18 @@ const query = gql`
 
 describe('Mutation signup', () => {
   it('Success', async () => {
-    const res = await requestAsync({ query, variables: { id: 'user', username: 'user', email: 'user@gmail.com', password: 'user1234' } });
+    const res = await graphQLAsync({ query, variables: { id: 'user', username: 'user', email: 'user@gmail.com', password: 'user1234' } });
     expect(res).to.have.status(200);
 
     assert.isNotNull(res.body.data.signup);
 
     const { _id, iat, exp, ...user } = await verify(res.body.data.signup);
-    assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com' });
+    assert.deepEqual(user, { id: 'user', username: 'user', email: 'user@gmail.com', type: 'LOCAL' });
   });
 
   describe('Already items', () => {
     it('id', async () => {
-      const res = await requestAsync({ query, variables: { id: 'user', username: 'notexist', email: 'notexist@gmail.com', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { id: 'user', username: 'notexist', email: 'notexist@gmail.com', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
@@ -32,7 +33,7 @@ describe('Mutation signup', () => {
     });
 
     it('email', async () => {
-      const res = await requestAsync({ query, variables: { id: 'notexist', username: 'notexist', email: 'user@gmail.com', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { id: 'notexist', username: 'notexist', email: 'user@gmail.com', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
@@ -42,7 +43,7 @@ describe('Mutation signup', () => {
 
   describe('Empty items', () => {
     it('id', async () => {
-      const res = await requestAsync({ query, variables: { id: '', username: 'notexist', email: 'notexist@gmail.com', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { id: '', username: 'notexist', email: 'notexist@gmail.com', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
@@ -50,7 +51,7 @@ describe('Mutation signup', () => {
     });
 
     it('username', async () => {
-      const res = await requestAsync({ query, variables: { id: 'notexist', username: '', email: 'notexist@gmail.com', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { id: 'notexist', username: '', email: 'notexist@gmail.com', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
@@ -58,7 +59,7 @@ describe('Mutation signup', () => {
     });
 
     it('email', async () => {
-      const res = await requestAsync({ query, variables: { id: 'notexist', username: 'notexist', email: '', password: 'user1234' } });
+      const res = await graphQLAsync({ query, variables: { id: 'notexist', username: 'notexist', email: '', password: 'user1234' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
@@ -66,7 +67,7 @@ describe('Mutation signup', () => {
     });
 
     it('password', async () => {
-      const res = await requestAsync({ query, variables: { id: 'notexist', username: 'notexist', email: 'notexist@gmail.com', password: '' } });
+      const res = await graphQLAsync({ query, variables: { id: 'notexist', username: 'notexist', email: 'notexist@gmail.com', password: '' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
@@ -76,7 +77,7 @@ describe('Mutation signup', () => {
 
   describe('Invalid items', () => {
     it('id', async () => {
-      const res = await requestAsync({ query, variables: { id: 'notexist@email', username: 'notexist', email: 'notexist@gmail.com', password: 'notexist' } });
+      const res = await graphQLAsync({ query, variables: { id: 'notexist@email', username: 'notexist', email: 'notexist@gmail.com', password: 'notexist' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
@@ -84,7 +85,7 @@ describe('Mutation signup', () => {
     });
 
     it('email', async () => {
-      const res = await requestAsync({ query, variables: { id: 'notexist', username: 'notexist', email: 'notexist', password: 'notexist' } });
+      const res = await graphQLAsync({ query, variables: { id: 'notexist', username: 'notexist', email: 'notexist', password: 'notexist' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
@@ -92,7 +93,7 @@ describe('Mutation signup', () => {
     });
 
     it('password', async () => {
-      const res = await requestAsync({ query, variables: { id: 'notexist', username: 'notexist', email: 'notexist@gmail.com', password: 'user' } });
+      const res = await graphQLAsync({ query, variables: { id: 'notexist', username: 'notexist', email: 'notexist@gmail.com', password: 'user' } });
       expect(res).to.have.status(200);
 
       expect(res.body.data.signup).to.be.null;
