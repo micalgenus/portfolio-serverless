@@ -2,7 +2,7 @@ import { Datastore, Query } from '@google-cloud/datastore';
 import { Operator } from '@google-cloud/datastore/build/src/query';
 import TestDatastore from 'nedb';
 
-import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem, TableTemplate } from '@/interfaces';
+import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem, TableTemplate } from '@/typings/database';
 
 // export Google Cloud Datastore
 const datastore = new Datastore({ projectId: process.env.GOOGLE_DATASTORE_PROJECT_ID });

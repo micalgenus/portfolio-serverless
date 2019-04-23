@@ -1,4 +1,4 @@
-import { TableTemplate } from '@/interfaces';
+import { TableTemplate } from '@/typings/database';
 import { cache, CACHE_EXPIRE } from '@/config';
 
 export const getUserCacheKey = (id: string) => `user:${id}`;

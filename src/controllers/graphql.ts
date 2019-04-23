@@ -4,7 +4,7 @@ import cors from 'cors';
 
 import { authorization } from '@/controllers/auth';
 
-import { GraphQLExpressContext } from '@/interfaces';
+import { GraphQLExpressContext } from '@/typings';
 
 import schema from '@/schemas';
 

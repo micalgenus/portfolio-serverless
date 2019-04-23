@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import DataStore from './index';
-import { UserTable } from '@/interfaces';
+import { UserTable } from '@/typings/database';
 import { createToken, encryptDataWithRSA, decrypyDataWithRSA } from '@/controllers/auth';
 
 import { getUserCacheKey, updateCacheItem, getCacheItem } from '@/lib/utils/cache';

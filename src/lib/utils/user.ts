@@ -1,5 +1,5 @@
 import { isChangeString } from './index';
-import { UserTable } from '@/interfaces';
+import { UserTable } from '@/typings/database';
 
 const idRegex = /(?!^([0-9]+)([[\\s]*]?)$)(?!^([0-9]+)[[a-zA-Z]*]?([[\\s]*]?)$)^([_]?([a-zA-Z0-9]+)([[\\s]*]?))$/;
 const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

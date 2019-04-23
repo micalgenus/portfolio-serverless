@@ -1,4 +1,4 @@
-import { OrderingTable } from '@/interfaces';
+import { OrderingTable } from '@/typings/database';
 
 /**
  *

@@ -1,5 +1,5 @@
 import DataStore from './index';
-import { CategoryItemTable } from '@/interfaces';
+import { CategoryItemTable } from '@/typings/database';
 
 import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 

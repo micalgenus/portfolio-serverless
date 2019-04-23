@@ -1,4 +1,3 @@
 import '@/config';
 
-export { default as graphql } from '@/graphql';
-export { default as oauth } from '@/oauth';
+export { default as graphql } from '@/controllers/graphql';

@@ -1,7 +1,7 @@
-import '@/config';
+import '../config';
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import graphql from '@/graphql';
+import graphql from '@/controllers/graphql';
 
 chai.use(chaiHttp);
 chai.should();
