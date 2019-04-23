@@ -3,7 +3,10 @@ import '@/tests/config';
 import chai from 'chai';
 import express from 'express';
 
+import oauth from '@/controllers/auth/oauth';
 import graphql from '@/controllers/graphql';
+
+import { OAuth } from '@/typings/database';
 
 type Response = any;
 type methods = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -15,6 +18,7 @@ interface chaiRequest {
 }
 
 const app = express();
+app.use('/oauth', oauth);
 app.use('/graphql', graphql);
 
 /**
@@ -45,3 +49,11 @@ interface graphQLRequest {
 export const graphQLAsync = ({ query, variables, authorization }: graphQLRequest) =>
   requestAsync('POST', '/graphql', { authorization, body: { query, variables } });
 
+type OAuthTest = 'github';
+
+interface oauthRequest {
+  type: OAuth | OAuthTest;
+  code: string;
+}
+
+export const oauthAsync = ({ type, code }: oauthRequest) => requestAsync('GET', '/oauth', { params: { type, code } });

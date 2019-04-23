@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "rm -rf dist docs",
     "build": "babel src --out-dir dist --copy-files --extensions \".ts,.tsx\"",
-    "postbuild": "graphdoc -s ./dist/schemas/typeDefs.js -o ./docs",
+    "postbuild": "graphdoc -s ./dist/controllers/graphql/schemas/typeDefs.js -o ./docs",
     "deploy": "yarn deploy:gcp",
     "deploy:gcp": "serverless deploy",
     "test": "NODE_ENV=test mocha ./dist/tests/**/*.spec.js",
@@ -52,6 +52,7 @@
     "jsonwebtoken": "^8.5.1",
     "nedb": "^1.8.0",
     "node-rsa": "^1.0.5",
+    "randomstring": "^1.1.5",
     "request": "^2.88.0",
     "request-promise": "^4.2.4"
   }

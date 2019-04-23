@@ -1,16 +1,15 @@
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
 import { Request } from 'express';
 
-import './database';
-
-declare namespace portfolio {
-  interface GraphQLRequest extends Request {
-    user?: object;
-  }
-
-  interface GraphQLExpressContext extends ExpressContext {
-    req: GraphQLRequest;
-  }
+export interface GraphQLRequest extends Request {
+  user?: object;
 }
 
-export = portfolio;
+export interface GraphQLExpressContext extends ExpressContext {
+  req: GraphQLRequest;
+}
+
+export interface OAuthTokenResponse {
+  errorMessage?: string;
+  token?: string;
+}

@@ -1,8 +1,9 @@
 import bcrypt from 'bcrypt';
+import randomstring from 'randomstring';
 
 import DataStore from './index';
-import { UserTable } from '@/typings/database';
-import { createToken, encryptDataWithRSA, decrypyDataWithRSA } from '@/controllers/auth';
+import { UserTable, OAuth } from '@/typings/database';
+import { createToken, encryptDataWithRSA, decrypyDataWithRSA, verify } from '@/controllers/auth';
 
 import { getUserCacheKey, updateCacheItem, getCacheItem } from '@/lib/utils/cache';
 
@@ -14,20 +15,15 @@ class UserDatabase extends DataStore<UserTable> {
     super('user');
   }
 
-  static async createJwtToken({ _id, id, email, username }: UserTable): Promise<string> {
-    return createToken({ _id, id: id, email, username });
+  static async createJwtToken({ _id, id, email, username }: UserTable, type?: OAuth): Promise<string> {
+    return createToken({ _id, id: id, email, username, type: type || 'LOCAL' });
   }
 
   async signup({ id, email, username, password }: UserTable): Promise<string> {
-    // check empty values
-    checkEmptyItems({ id, username, password, email });
-
     id = id.toLowerCase();
 
-    // check invalid values
+    // check invalid id
     if (!UserUtils.checkValidId(id)) throw new Error('Invalid id');
-    if (!UserUtils.checkValidEmail(email)) throw new Error('Invalid email');
-    if (!UserUtils.checkValidPassword(password)) throw new Error('Invalid password');
 
     // Check exist user id
     const { entities: existId } = await this.find([{ key: 'id', op: '=', value: id }]);
@@ -38,11 +34,39 @@ class UserDatabase extends DataStore<UserTable> {
     if (existEmail.length) throw new Error('Exist user email');
 
     // Create user
-    const newUser = await this.create({ id, email, username, password: await bcrypt.hash(password, 10) });
+    const newUser = await this.create({ id, email, username, password });
 
     updateCacheItem(id, newUser, getUserCacheKey);
 
     return UserDatabase.createJwtToken({ ...newUser });
+  }
+
+  async signupLocal({ id, email, username, password }: UserTable): Promise<string> {
+    // check empty values
+    checkEmptyItems({ id, username, password, email });
+
+    // check invalid values
+    if (!UserUtils.checkValidEmail(email)) throw new Error('Invalid email');
+    if (!UserUtils.checkValidPassword(password)) throw new Error('Invalid password');
+
+    return this.signup({ id, email, username, password: await bcrypt.hash(password, 10) });
+  }
+
+  async signupOAuth(type: OAuth, { id, email, password, ...userInfo }: UserTable): Promise<string> {
+    let newId, exist;
+
+    do {
+      newId = randomstring.generate({ length: 20, charset: 'alphabetic' });
+      exist = (await this.find([{ key: 'id', op: '=', value: newId }])).entities;
+    } while (exist.length);
+
+    const token = await this.signup({ id: newId, password: type, ...userInfo });
+    if (!token) throw new Error('Fail create user');
+
+    const user = await verify(token);
+    const updated = await this.updateUserInfo(user._id, userInfo);
+
+    return UserDatabase.createJwtToken({ ...updated }, type);
   }
 
   static async createRememberMeToken(user, password): Promise<string> {
@@ -78,6 +102,13 @@ class UserDatabase extends DataStore<UserTable> {
     if (!valid) throw new Error('Incorrect password');
 
     return this.createJwtToken({ ...user });
+  }
+
+  async loginOAuthByPk(type: OAuth, id: string): Promise<string> {
+    const user = await this.getUserInfoByPk(id);
+    if (!user) throw new Error('Not found user');
+
+    return UserDatabase.createJwtToken(user, type);
   }
 
   async login({ user = '', password }): Promise<string> {

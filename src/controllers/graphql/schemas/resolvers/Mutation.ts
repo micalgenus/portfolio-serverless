@@ -4,7 +4,7 @@ import CategoryItemModel from '@/models/CategoryItem';
 
 module.exports = {
   // Handle user signup
-  signup: async (_, { id, username, email, password }) => UserModel.signup({ id, username, email, password }),
+  signup: async (_, { id, username, email, password }) => UserModel.signupLocal({ id, username, email, password }),
 
   // Handles user login
   login: async (_, { user, id, email, password }) => {
