@@ -6,7 +6,7 @@ import { authorization } from '@/controllers/auth';
 
 import { GraphQLExpressContext } from '@/typings';
 
-import schema from '@/schemas';
+import schema from './schemas';
 
 const app = express();
 

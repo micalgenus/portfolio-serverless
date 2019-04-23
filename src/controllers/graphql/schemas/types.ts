@@ -1,22 +1,6 @@
 // import gql from 'graphql-tag';
 const gql = (query: TemplateStringsArray) => query.join('');
 
-// export const Link = gql`
-//   type Link {
-//     _id: String!
-//     icon: String
-//     color: String
-//     href: String
-//   }
-// `;
-
-// export const DateRange = gql`
-//   type DateRange {
-//     start: Int
-//     end: Int
-//   }
-// `;
-
 export const CategoryItem = gql`
   type CategoryItem {
     _id: String!
