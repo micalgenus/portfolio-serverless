@@ -43,7 +43,7 @@ export const findAndCreateUser = async (type: OAuth, _id: string, { id, password
   if (!token) return null;
 
   // Connect User to OAuth
-  const user = await verify(token);
+  const user: any = await verify(token);
   const connected = await OAuthModel.connectToUser(type, _id, user._id).catch(() => null);
   if (!connected) {
     // TODO: Remove created user #3

@@ -3,9 +3,11 @@ import rp from 'request-promise';
 import { findAndCreateUser } from './oauth';
 
 import { OAuthTokenResponse } from '@/typings';
-import { accessToken, userInformation } from '@/mock/oauth/github.json';
 
 const isTest = process.env.NODE_ENV === 'test';
+
+const mockData = isTest ? require('@/mock/oauth/github.json') : {};
+const { accessToken, userInformation } = mockData;
 
 const getAccessTokenMock = async (code: string): Promise<any> => new Promise(resolve => resolve(accessToken));
 const getAccessTokenRequest = async (code: string): Promise<any> =>

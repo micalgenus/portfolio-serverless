@@ -20,6 +20,9 @@ class UserDatabase extends DataStore<UserTable> {
   }
 
   async signup({ id, email, username, password }: UserTable): Promise<string> {
+    // check empty values
+    checkEmptyItems({ id, password });
+
     id = id.toLowerCase();
 
     // check invalid id
@@ -30,11 +33,13 @@ class UserDatabase extends DataStore<UserTable> {
     if (existId.length) throw new Error('Exist user id');
 
     // Check exist user email
-    const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: email }]);
-    if (existEmail.length) throw new Error('Exist user email');
+    if (email) {
+      const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: email }]);
+      if (existEmail.length) throw new Error('Exist user email');
+    }
 
     // Create user
-    const newUser = await this.create({ id, email, username, password });
+    const newUser = await this.create({ id, email: email || '', username: username || '', password });
 
     updateCacheItem(id, newUser, getUserCacheKey);
 
@@ -63,7 +68,7 @@ class UserDatabase extends DataStore<UserTable> {
     const token = await this.signup({ id: newId, password: type, ...userInfo });
     if (!token) throw new Error('Fail create user');
 
-    const user = await verify(token);
+    const user: any = await verify(token);
     const updated = await this.updateUserInfo(user._id, userInfo);
 
     return UserDatabase.createJwtToken({ ...updated }, type);

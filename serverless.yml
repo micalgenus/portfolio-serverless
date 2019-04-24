@@ -24,6 +24,7 @@ package:
     - node_modules/**
     - src/**
     - dist/tests/**
+    - dist/mock/**
     - docs/**
     - .git/**
     - .gitignore
