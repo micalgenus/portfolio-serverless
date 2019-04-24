@@ -1,16 +1,13 @@
-import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import cors from 'cors';
 
 import { authorization } from '@/controllers/auth';
+import { AllowCORSExpress } from '@/lib/express';
 
 import { GraphQLExpressContext } from '@/typings';
 
 import schema from './schemas';
 
-const app = express();
-
-app.use(cors({ origin: true, credentials: true }));
+const app = AllowCORSExpress();
 app.use(authorization);
 
 const server = new ApolloServer({
