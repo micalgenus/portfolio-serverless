@@ -1,5 +1,7 @@
 import GITHUB from './github';
 
+import { AllowCORSExpress } from '@/lib/express';
+
 import OAuthModel from '@/models/OAuth';
 import UserModel from '@/models/User';
 
@@ -13,7 +15,7 @@ const commands = {
 
 const ALLOWS = Object.keys(commands);
 
-export default async (req, res): Promise<OAuthTokenResponse> => {
+const defaultOAuthRoute = async (req, res): Promise<OAuthTokenResponse> => {
   const { type: t, code } = req.query;
   if (!t || !code) return res.status(401).end();
 
@@ -25,6 +27,11 @@ export default async (req, res): Promise<OAuthTokenResponse> => {
 
   return res.json({ token });
 };
+
+const app = AllowCORSExpress();
+app.use(defaultOAuthRoute);
+
+export default app;
 
 export const findAndCreateUser = async (type: OAuth, _id: string, { id, password, email, ...userInfo }: UserTable): Promise<string> => {
   // Find
@@ -38,7 +45,10 @@ export const findAndCreateUser = async (type: OAuth, _id: string, { id, password
   // Connect User to OAuth
   const user = await verify(token);
   const connected = await OAuthModel.connectToUser(type, _id, user._id).catch(() => null);
-  if (!connected) return null;
+  if (!connected) {
+    // TODO: Remove created user #3
+    return null;
+  }
 
   // Login
   return UserModel.loginOAuthByPk(type, user._id);
