@@ -23,6 +23,8 @@ package:
     - .nyc_output/**
     - node_modules/**
     - src/**
+    - dist/tests/**
+    - docs/**
     - .git/**
     - .gitignore
     - .codeclimate.yml

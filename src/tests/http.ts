@@ -21,6 +21,8 @@ const app = express();
 app.use('/oauth', oauth);
 app.use('/graphql', graphql);
 
+export default app;
+
 /**
  * @param method HTTP Methods (GET, POST, DELETE, PUT)
  * @param path
