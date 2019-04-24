@@ -37,7 +37,11 @@ export default async (code: string): Promise<OAuthTokenResponse> => {
   const user = await getUserInformation(oauth.token_type, oauth.access_token);
   if (user.error) return { errorMessage: user.error };
 
-  const token = await findAndCreateUser('GITHUB', user.id, { username: user.name, github: user.html_url, description: user.bio });
+  const token = await findAndCreateUser('GITHUB', user.id, {
+    username: user.name,
+    github: user.html_url.replace('https://github.com/', ''),
+    description: user.bio,
+  });
   if (!token) return { errorMessage: 'Server Error' };
 
   return { token };
