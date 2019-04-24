@@ -4,6 +4,14 @@ export const checkEmptyItems = (items: object) => {
   }
 };
 
+export const checkUndefinedValue = (items: any) => {
+  for (const key in items) {
+    if (items[key] === undefined || items[key] === null) {
+      throw new Error('Unsupported field value, undefined, was provided');
+    }
+  }
+};
+
 /**
  * @return true: Same
  * @return false: Difference

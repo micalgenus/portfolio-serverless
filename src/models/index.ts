@@ -2,6 +2,8 @@ import { Datastore, Query } from '@google-cloud/datastore';
 import { Operator } from '@google-cloud/datastore/build/src/query';
 import TestDatastore from 'nedb';
 
+import { checkUndefinedValue } from '@/lib/utils';
+
 import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem, TableTemplate } from '@/typings/database';
 
 // export Google Cloud Datastore
@@ -153,6 +155,8 @@ class TestDataStoreAbstract<T extends TableTemplate> implements DatabaseConnecto
   }
 
   async create(data: T) {
+    checkUndefinedValue(data);
+
     return new Promise<T>((resolve, reject) =>
       this.db.insert(data, (err, newDocs) => {
         if (err) return reject(err);
@@ -162,12 +166,17 @@ class TestDataStoreAbstract<T extends TableTemplate> implements DatabaseConnecto
   }
 
   async update(id: string, data: T) {
+    checkUndefinedValue(data);
+
     // Reject the _id member
     delete data._id;
+
     return new Promise<T>(resolve => this.db.update({ _id: id }, { $set: { ...data } }, () => resolve(this.read(id))));
   }
 
   async read(id: string) {
+    checkUndefinedValue({ id: id });
+
     return new Promise<T>((resolve, reject) =>
       this.db.findOne({ _id: id }, function(err, doc: T) {
         if (err) return reject(err);
@@ -177,6 +186,8 @@ class TestDataStoreAbstract<T extends TableTemplate> implements DatabaseConnecto
   }
 
   async find(filters: DatabaseFilterItem[], order?: keyof T, desc?: boolean) {
+    for (const filter of filters) checkUndefinedValue(filter);
+
     return new Promise<DatabaseFindItem<T>>((resolve, reject) => {
       let q = this.db.find({
         $where: function() {
