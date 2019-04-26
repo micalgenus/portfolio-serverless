@@ -19,14 +19,14 @@ describe('Github OAuth', () => {
       const signup = await oauthAsync({ code: 'mockCode', type: 'github' });
 
       const user = await graphQLAsync({ query, authorization: signup.body.token });
-      assert.equal(user.body.data.me.github, userInformation.html_url);
+      assert.equal(user.body.data.me.github, userInformation.html_url.replace('https://github.com/', ''));
     });
 
     it('Login', async () => {
       const login = await oauthAsync({ code: 'mockCode', type: 'github' });
 
       const user = await graphQLAsync({ query, authorization: login.body.token });
-      assert.equal(user.body.data.me.github, userInformation.html_url);
+      assert.equal(user.body.data.me.github, userInformation.html_url.replace('https://github.com/', ''));
     });
   });
 });
