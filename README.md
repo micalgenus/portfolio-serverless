@@ -4,7 +4,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/b3e8b5928b4e461ca3a1/maintainability)](https://codeclimate.com/github/micalgenus/portfolio-serverless/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/b3e8b5928b4e461ca3a1/test_coverage)](https://codeclimate.com/github/micalgenus/portfolio-serverless/test_coverage)
 
-포트폴리오 제공용 홈페이지의 serverless GraphQL 서비스입니다. Google Cloud Functions, Google Cloud Datastore를 사용합니다.
+포트폴리오 제공용 홈페이지의 GraphQL, OAuth 서비스입니다. Google Cloud Functions, Google Cloud Datastore를 사용합니다.
 
 ## 사용법
 
