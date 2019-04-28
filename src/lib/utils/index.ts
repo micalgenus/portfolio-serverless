@@ -8,7 +8,7 @@ export const checkEmptyItems = (items: object) => {
 
 export const checkUndefinedValue = (items: any) => {
   for (const key in items) {
-    if (items[key] === undefined || items[key] === null) {
+    if (items[key] === undefined) {
       throw new Error('Unsupported field value, undefined, was provided');
     }
   }
