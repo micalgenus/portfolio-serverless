@@ -16,8 +16,8 @@ export const CategoryItem = gql`
  */
 export const Category = gql`
   type Category {
-    _id: String
-    user: String
+    _id: String!
+    user: String!
     name: String
     items(filter: [String]): [CategoryItem]
   }
@@ -25,8 +25,8 @@ export const Category = gql`
 
 export const User = gql`
   type User {
-    id: String
-    username: String
+    id: String!
+    username: String!
     email: String
     github: String
     linkedin: String

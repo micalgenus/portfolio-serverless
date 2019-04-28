@@ -47,6 +47,6 @@ describe('Mutation updateCategoryItem', () => {
     const res = await graphQLAsync({ query, variables: { id: item, category, item: { name: 'categoryItem' } }, authorization: token });
     expect(res).to.have.status(200);
 
-    assert.deepEqual(res.body.data.updateCategoryItem, { name: 'categoryItem', description: '' });
+    assert.deepEqual(res.body.data.updateCategoryItem, { name: 'categoryItem', description: null });
   });
 });
