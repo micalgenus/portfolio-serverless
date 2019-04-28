@@ -1,7 +1,7 @@
 {
   "include": ["src/**/*.ts"],
   "extension": [".ts"],
-  "exclude": ["src/**/*.d.ts", "dist/**/*", "src/tests/**/*"],
+  "exclude": ["src/**/*.d.ts", "dist/**/*", "src/tests/**/*", "src/index.ts"],
   "reporter": ["lcov", "text"],
   "all": true
 }
