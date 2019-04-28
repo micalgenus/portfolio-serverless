@@ -1,6 +1,7 @@
 import DataStore from './index';
 import { CategoryTable } from '@/typings/database';
 
+import { updateNewDataWithoutUndefined } from '@/lib/utils';
 import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
 
@@ -81,11 +82,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
 
     if (category.user !== user) throw new Error('Permission denied');
 
-    const updateData = {
-      ...category,
-      name: name === undefined ? category.name : name,
-      sequence: sequence === undefined ? category.sequence : sequence,
-    };
+    const updateData = updateNewDataWithoutUndefined(category, { name, sequence });
 
     // TODO: Update items with transaction
     const updated = await this.update(id, updateData);

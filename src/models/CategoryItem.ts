@@ -1,6 +1,7 @@
 import DataStore from './index';
 import { CategoryItemTable } from '@/typings/database';
 
+import { updateNewDataWithoutUndefined } from '@/lib/utils';
 import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 
 import UserModel from './User';
@@ -106,11 +107,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     // Same data as before
     if (name === item.name && description === item.description) throw new Error('No information to update');
 
-    const updateData = {
-      ...item,
-      name: name === undefined ? item.name : name,
-      description: description === undefined ? item.description : description,
-    };
+    const updateData = updateNewDataWithoutUndefined(item, { name, description });
 
     // TODO: Update items with transaction
     const updated = await this.update(id, updateData);
