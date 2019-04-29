@@ -18,13 +18,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   ///////////////////////////////////////////////////////////////////////////
 
   async updateItemsOrder(user: string, categories: CategoryTable[]) {
-    return updateItemsOrder(
-      user,
-      categories,
-      id => this.read(id),
-      (id, data) => this.update(id, data),
-      (id, items) => updateCacheItem(id, items, getCategoryCacheKey)
-    );
+    return updateItemsOrder(user, categories, this, getCategoryCacheKey);
   }
 
   /**
@@ -49,14 +43,20 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     return _id;
   }
 
+  async checkExistCategoryByUserId(user: string, filter?: string[]): Promise<boolean> {
+    const [existCategory] = await this.getCategoryByUserId(user, filter);
+    if (!existCategory) throw new Error('Category not found');
+
+    return true;
+  }
+
   async getCategoryByUserId(user: string, filter?: string[]) {
     if (!user) throw new Error('Required user');
 
     const cacheItem = await getCacheItem<CategoryTable[]>(user, getCategoryCacheKey);
     if (cacheItem) return returnCacheItemWithFilterOfArrayItems(cacheItem, filter);
 
-    const existUser = await UserModel.getUserInfoById(user);
-    if (!existUser) throw new Error('User not found');
+    await UserModel.getUserInfoById(user);
 
     let { entities: categories } = await this.find([{ key: 'user', op: '=', value: user }], 'sequence', true);
     if (filter) categories = categories.filter(p => filter.includes(p._id.toString()));
@@ -101,7 +101,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
 
     const categories = await this.getCategoryByUserId(user);
     for (const sequence of sequences) {
-      const result = await updateOrder(sequence._id, sequence.sequence, id => this.read(id), (id, data) => this.update(id, data));
+      const result = await updateOrder(sequence._id, sequence.sequence, this);
 
       if (!result) throw new Error('Fail update category sequence');
 

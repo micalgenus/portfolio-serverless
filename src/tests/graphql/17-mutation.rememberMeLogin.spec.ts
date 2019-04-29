@@ -44,7 +44,7 @@ describe('Mutation rememberMe', () => {
 
     const after = await graphQLAsync({ query: meQuery, authorization: res.body.data.rememberMeLogin });
     expect(after).to.have.status(200);
-    assert.deepEqual(after.body.data.me, { description: 'description', email: 'user@gmail.com', github: '', id: 'user', linkedin: '', username: 'user' });
+    assert.deepEqual(after.body.data.me, { description: 'description', email: 'user@gmail.com', github: null, id: 'user', linkedin: null, username: 'user' });
   });
 
   it('Empty token', async () => {

@@ -1,7 +1,7 @@
 import DataStore from './index';
 import { CategoryItemTable } from '@/typings/database';
 
-import { updateNewDataWithoutUndefined } from '@/lib/utils';
+import { updateNewDataWithoutUndefined, checkEmptyItems, checkAllUndefinedValue } from '@/lib/utils';
 import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 
 import UserModel from './User';
@@ -18,13 +18,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
   ///////////////////////////////////////////////////////////////////////////
 
   async updateItemsOrder(category: string, items: CategoryItemTable[]) {
-    return updateItemsOrder(
-      category,
-      items,
-      id => this.read(id),
-      (id, data) => this.update(id, data),
-      (id, items) => updateCacheItem(id, items, getCategoryItemCacheKey)
-    );
+    return updateItemsOrder(category, items, this, getCategoryItemCacheKey);
   }
 
   /**
@@ -33,7 +27,6 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
    * @param user user.id
    * @return {string} item._id
    */
-
   async createItemForCategory(category: string, user: string) {
     if (!user) throw new Error('Required user');
 
@@ -98,8 +91,8 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
   }
 
   async updateCategoryItem(id: string, category: string, user: string, { name, description }: CategoryItemTable): Promise<CategoryItemTable> {
-    if (!id || !category) throw new Error('Required id and category');
-    if (name === undefined && description === undefined) throw new Error('No information to update');
+    checkEmptyItems({ id, category });
+    checkAllUndefinedValue({ name, description });
 
     const [item] = await this.getItemsByCategory(category, user, [id]);
     if (!item) throw new Error('Category item not found');
@@ -118,19 +111,9 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     return updated;
   }
 
-  async updateCategoryItemSequence(category: string, user: string, sequences: { _id: string; sequence: number }[]) {
-    if (!category) throw new Error('Required category');
-    if (sequences.length === 0) throw new Error('Requires that the sequences is not empty');
-
-    const existUser = await UserModel.getUserInfoById(user);
-    if (!existUser) throw new Error('User not found');
-
-    const [existCategory] = await CategoryModel.getCategoryByUserId(user, [category]);
-    if (!existCategory) throw new Error('Category not found');
-
-    const items = await this.getItemsByCategory(category, user);
+  async orderingSequences(items: CategoryItemTable[], sequences: { _id: string; sequence: number }[]): Promise<CategoryItemTable[]> {
     for (const sequence of sequences) {
-      const result = await updateOrder(sequence._id, sequence.sequence, id => this.read(id), (id, data) => this.update(id, data));
+      const result = await updateOrder(sequence._id, sequence.sequence, this);
       if (!result) throw new Error('Fail update category sequence');
 
       for (const item of items) {
@@ -139,7 +122,18 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     }
 
     items.sort((a, b) => b.sequence - a.sequence);
-    await this.updateItemsOrder(category, items);
+    return items;
+  }
+
+  async updateCategoryItemSequence(category: string, user: string, sequences: { _id: string; sequence: number }[]) {
+    checkEmptyItems({ category, sequences });
+
+    await CategoryModel.checkExistCategoryByUserId(user, [category]);
+
+    const items = await this.getItemsByCategory(category, user);
+    const orderedItems = await this.orderingSequences(items, sequences);
+
+    await this.updateItemsOrder(category, orderedItems);
     return true;
   }
 }

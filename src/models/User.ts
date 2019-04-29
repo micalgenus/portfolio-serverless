@@ -7,7 +7,7 @@ import { createToken, encryptDataWithRSA, decrypyDataWithRSA, verify } from '@/c
 
 import { getUserCacheKey, updateCacheItem, getCacheItem } from '@/lib/utils/cache';
 
-import { checkEmptyItems } from '@/lib/utils';
+import { checkEmptyItems, checkAllUndefinedValue, updateNewDataWithoutUndefined } from '@/lib/utils';
 import * as UserUtils from '@/lib/utils/user';
 
 class UserDatabase extends DataStore<UserTable> {
@@ -141,7 +141,20 @@ class UserDatabase extends DataStore<UserTable> {
     return UserDatabase.compareUserPasswordAndLogin(existEmail[0], password);
   }
 
-  async getUserInfoByPk(_id): Promise<UserTable> {
+  async checkValidUpdateEmail(oldEmail: string, newEmail: string): Promise<boolean> {
+    if (newEmail && newEmail !== oldEmail) {
+      // Check exist user email
+      const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: newEmail }]);
+      if (existEmail.length) throw new Error('Exist user email');
+
+      // Check valid email
+      if (newEmail && !UserUtils.checkValidEmail(newEmail)) throw new Error('Invalid email');
+    }
+
+    return true;
+  }
+
+  async getUserInfoByPk(_id: string): Promise<UserTable> {
     if (!_id) throw new Error('Required id');
 
     const userinfo = await this.read(_id);
@@ -167,38 +180,21 @@ class UserDatabase extends DataStore<UserTable> {
   }
 
   async updateUserInfo(id, { username, email, github, linkedin, description }: UserTable): Promise<UserTable> {
-    if (!id) throw new Error('Required id');
+    checkEmptyItems({ id });
 
     // Empty check
-    if (username === undefined && email === undefined && github === undefined && linkedin === undefined && description === undefined)
-      throw new Error('No information to update');
+    checkAllUndefinedValue({ username, email, github, linkedin, description });
     if (username === '') throw new Error('Username must be required');
 
     // Get old user information
-    const userInfo = await this.read(id);
-    if (!userInfo) throw new Error('User not found');
+    const userInfo = await this.getUserInfoByPk(id);
 
     // Same data as before
     if (!UserUtils.isChangeUserDataWithBefore({ username, email, github, linkedin, description }, userInfo)) throw new Error('No information to update');
-
-    if (email && email !== userInfo.email) {
-      // Check exist user email
-      const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: email }]);
-      if (existEmail.length) throw new Error('Exist user email');
-
-      // Check valid email
-      if (email && !UserUtils.checkValidEmail(email)) throw new Error('Invalid email');
-    }
+    await this.checkValidUpdateEmail(userInfo.email, email);
 
     // Update user information
-    const updateData = {
-      ...userInfo,
-      username: (username === undefined ? userInfo.username : username) || '',
-      email: (email === undefined ? userInfo.email : email) || '',
-      github: (github === undefined ? userInfo.github : github) || '',
-      linkedin: (linkedin === undefined ? userInfo.linkedin : linkedin) || '',
-      description: ((description === undefined ? userInfo.description : description) || '').trim(),
-    };
+    const updateData = updateNewDataWithoutUndefined(userInfo, { username, email, github, linkedin, description: description && description.trim() });
 
     const updateInfo = await this.update(id, updateData);
     if (!updateInfo) throw new Error('Fail user data update');

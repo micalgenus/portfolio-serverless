@@ -36,8 +36,8 @@ describe('Mutation updateUserInfo', () => {
         id: 'user',
         username: 'user',
         email: 'user2@gmail.com',
-        github: '',
-        linkedin: '',
+        github: null,
+        linkedin: null,
         description: 'description',
       });
     });
@@ -46,7 +46,7 @@ describe('Mutation updateUserInfo', () => {
       const res = await graphQLAsync({ query, variables: { email: '', description: '' }, authorization: token });
       expect(res).to.have.status(200);
 
-      assert.deepEqual(res.body.data.updateUserInfo, { id: 'user', username: 'user', email: '', github: '', linkedin: '', description: '' });
+      assert.deepEqual(res.body.data.updateUserInfo, { id: 'user', username: 'user', email: null, github: null, linkedin: null, description: null });
     });
 
     after(async () => {
