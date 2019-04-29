@@ -7,7 +7,7 @@ import { createToken, encryptDataWithRSA, decrypyDataWithRSA, verify } from '@/c
 
 import { getUserCacheKey, updateCacheItem, getCacheItem } from '@/lib/utils/cache';
 
-import { checkEmptyItems, checkAllUndefinedValue, updateNewDataWithoutUndefined } from '@/lib/utils';
+import { checkEmptyItems, checkAllUndefinedValue, updateNewDataWithoutUndefined, isChangeDataWithBefore } from '@/lib/utils';
 import * as UserUtils from '@/lib/utils/user';
 
 class UserDatabase extends DataStore<UserTable> {
@@ -17,6 +17,35 @@ class UserDatabase extends DataStore<UserTable> {
 
   static async createJwtToken({ _id, id, email, username }: UserTable, type?: OAuth): Promise<string> {
     return createToken({ _id, id: id, email, username, type: type || 'LOCAL' });
+  }
+
+  static async createRememberMeToken(user, password): Promise<string> {
+    return encryptDataWithRSA(JSON.stringify({ user, password }));
+  }
+
+  static async decodeRememberMeToken(token): Promise<any> {
+    return JSON.parse(decrypyDataWithRSA(token));
+  }
+
+  static async compareUserPasswordAndLogin(user, password = null): Promise<string> {
+    if (!password) throw new Error('A password is required');
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) throw new Error('Incorrect password');
+
+    return this.createJwtToken({ ...user });
+  }
+
+  async checkValidUpdateEmail(oldEmail: string, newEmail: string): Promise<boolean> {
+    if (newEmail && newEmail !== oldEmail) {
+      // Check exist user email
+      const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: newEmail }]);
+      if (existEmail.length) throw new Error('Exist user email');
+
+      // Check valid email
+      if (newEmail && !UserUtils.checkValidEmail(newEmail)) throw new Error('Invalid email');
+    }
+
+    return true;
   }
 
   async signup({ id, email, username, password }: UserTable): Promise<string> {
@@ -33,10 +62,7 @@ class UserDatabase extends DataStore<UserTable> {
     if (existId.length) throw new Error('Exist user id');
 
     // Check exist user email
-    if (email) {
-      const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: email }]);
-      if (existEmail.length) throw new Error('Exist user email');
-    }
+    await this.checkValidUpdateEmail('', email);
 
     // Create user
     const newUser = await this.create({ id, email: email || '', username: username || '', password });
@@ -74,14 +100,6 @@ class UserDatabase extends DataStore<UserTable> {
     return UserDatabase.createJwtToken({ ...updated }, type);
   }
 
-  static async createRememberMeToken(user, password): Promise<string> {
-    return encryptDataWithRSA(JSON.stringify({ user, password }));
-  }
-
-  static async decodeRememberMeToken(token): Promise<any> {
-    return JSON.parse(decrypyDataWithRSA(token));
-  }
-
   async rememberMe(user: string, password: string): Promise<string> {
     if (!user) throw new Error('required id');
 
@@ -99,14 +117,6 @@ class UserDatabase extends DataStore<UserTable> {
 
     const { user, password } = decoded;
     return this.login({ user, password });
-  }
-
-  static async compareUserPasswordAndLogin(user, password = null): Promise<string> {
-    if (!password) throw new Error('A password is required');
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) throw new Error('Incorrect password');
-
-    return this.createJwtToken({ ...user });
   }
 
   async loginOAuthByPk(type: OAuth, id: string): Promise<string> {
@@ -139,19 +149,6 @@ class UserDatabase extends DataStore<UserTable> {
     if (!existEmail.length) throw new Error('No user with that email');
 
     return UserDatabase.compareUserPasswordAndLogin(existEmail[0], password);
-  }
-
-  async checkValidUpdateEmail(oldEmail: string, newEmail: string): Promise<boolean> {
-    if (newEmail && newEmail !== oldEmail) {
-      // Check exist user email
-      const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: newEmail }]);
-      if (existEmail.length) throw new Error('Exist user email');
-
-      // Check valid email
-      if (newEmail && !UserUtils.checkValidEmail(newEmail)) throw new Error('Invalid email');
-    }
-
-    return true;
   }
 
   async getUserInfoByPk(_id: string): Promise<UserTable> {
@@ -190,7 +187,7 @@ class UserDatabase extends DataStore<UserTable> {
     const userInfo = await this.getUserInfoByPk(id);
 
     // Same data as before
-    if (!UserUtils.isChangeUserDataWithBefore({ username, email, github, linkedin, description }, userInfo)) throw new Error('No information to update');
+    if (!isChangeDataWithBefore({ username, email, github, linkedin, description }, userInfo)) throw new Error('No information to update');
     await this.checkValidUpdateEmail(userInfo.email, email);
 
     // Update user information

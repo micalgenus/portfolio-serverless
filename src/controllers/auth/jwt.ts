@@ -14,12 +14,19 @@ export const createToken = async ({ iat = null, exp = null, ...data }: any) => {
   return [JWT_PREFIX, encryptJwt(jwt.sign({ ...data }, JWT_KEY, { expiresIn: '1d' }))].join(' ');
 };
 
-export const verify = async token => {
+const splitToken = (token: string) => {
   if (!token) return null;
   const [bearer, encodedData] = token.split(' ');
 
   // Invalid Signature || Header not exists
   if (bearer !== JWT_PREFIX || !encodedData) return null;
+
+  return encodedData;
+};
+
+export const verify = async token => {
+  const encodedData = splitToken(token);
+  if (!encodedData) return null;
 
   try {
     return jwt.verify(decryptJwt(encodedData), JWT_KEY);

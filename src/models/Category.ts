@@ -1,7 +1,7 @@
 import DataStore from './index';
 import { CategoryTable } from '@/typings/database';
 
-import { updateNewDataWithoutUndefined } from '@/lib/utils';
+import { updateNewDataWithoutUndefined, isChangeDataWithBefore } from '@/lib/utils';
 import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
 
@@ -43,11 +43,11 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     return _id;
   }
 
-  async checkExistCategoryByUserId(user: string, filter?: string[]): Promise<boolean> {
+  async checkExistCategoryByUserId(user: string, filter?: string[]): Promise<CategoryTable> {
     const [existCategory] = await this.getCategoryByUserId(user, filter);
     if (!existCategory) throw new Error('Category not found');
 
-    return true;
+    return existCategory;
   }
 
   async getCategoryByUserId(user: string, filter?: string[]) {
@@ -78,7 +78,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     if (!category) throw new Error('Category not found');
 
     // Same data as before
-    if (name === category.name && sequence === category.sequence) throw new Error('No information to update');
+    if (!isChangeDataWithBefore({ name, sequence }, category)) throw new Error('No information to update');
 
     if (category.user !== user) throw new Error('Permission denied');
 

@@ -1,10 +1,9 @@
 import DataStore from './index';
 import { CategoryItemTable } from '@/typings/database';
 
-import { updateNewDataWithoutUndefined, checkEmptyItems, checkAllUndefinedValue } from '@/lib/utils';
+import { updateNewDataWithoutUndefined, checkEmptyItems, checkAllUndefinedValue, isChangeDataWithBefore } from '@/lib/utils';
 import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 
-import UserModel from './User';
 import CategoryModel from './Category';
 import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
 
@@ -12,10 +11,6 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
   constructor() {
     super('categoryItem');
   }
-
-  ///////////////////////////////////////////////////////////////////////////
-  //                                Methods                                //
-  ///////////////////////////////////////////////////////////////////////////
 
   async updateItemsOrder(category: string, items: CategoryItemTable[]) {
     return updateItemsOrder(category, items, this, getCategoryItemCacheKey);
@@ -28,13 +23,8 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
    * @return {string} item._id
    */
   async createItemForCategory(category: string, user: string) {
-    if (!user) throw new Error('Required user');
-
-    const existUser = await UserModel.getUserInfoById(user);
-    if (!existUser) throw new Error('User not found');
-
-    const [existCategory] = await CategoryModel.getCategoryByUserId(user, [category]);
-    if (!existCategory) throw new Error('Category not found');
+    checkEmptyItems({ user });
+    await CategoryModel.checkExistCategoryByUserId(user, [category]);
 
     const createCategoryItem = { category, name: '', description: '', sequence: 0 };
 
@@ -48,31 +38,29 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     return _id;
   }
 
-  async getItemsByCategory(category: string, user: string, filter?: string[]) {
-    if (!user) throw new Error('Required user');
-
-    const [existCategory] = await CategoryModel.getCategoryByUserId(user, [category]);
-    if (!existCategory) throw new Error('Category not found');
-
-    const cacheItem = await getCacheItem<CategoryItemTable[]>(category, getCategoryItemCacheKey);
-    if (cacheItem) return returnCacheItemWithFilterOfArrayItems(cacheItem, filter);
-
-    let { entities: items } = await this.find([{ key: 'category', op: '=', value: existCategory._id }], 'sequence', true);
+  async findAndUpdateCacheItemWithFilter(category: string, filter?: string[]): Promise<CategoryItemTable[]> {
+    let { entities: items } = await this.find([{ key: 'category', op: '=', value: category }], 'sequence', true);
     if (filter) items = items.filter(p => filter.includes(p._id.toString()));
 
     if (!filter) await updateCacheItem(category, items, getCategoryItemCacheKey);
     return items || [];
   }
 
+  async getItemsByCategory(category: string, user: string, filter?: string[]) {
+    checkEmptyItems({ user });
+
+    const cacheItem = await getCacheItem<CategoryItemTable[]>(category, getCategoryItemCacheKey);
+    if (cacheItem) return returnCacheItemWithFilterOfArrayItems(cacheItem, filter);
+
+    const existCategory = await CategoryModel.checkExistCategoryByUserId(user, [category]);
+
+    return this.findAndUpdateCacheItemWithFilter(existCategory._id.toString(), filter);
+  }
+
   async removeCategoryItemById(id: string, category: string, user: string) {
-    if (!id || !category || !user) throw new Error('Required id, category and user');
+    checkEmptyItems({ id, category, user });
 
-    const existUser = await UserModel.getUserInfoById(user);
-    if (!existUser) throw new Error('User not found');
-
-    const [existCategory] = await CategoryModel.getCategoryByUserId(user, [category]);
-    if (!existCategory) throw new Error('Category not found');
-
+    const existCategory = await CategoryModel.checkExistCategoryByUserId(user, [category]);
     if (existCategory.user !== user) throw new Error('Permission denied');
 
     const item = await this.read(id);
@@ -98,7 +86,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     if (!item) throw new Error('Category item not found');
 
     // Same data as before
-    if (name === item.name && description === item.description) throw new Error('No information to update');
+    if (!isChangeDataWithBefore({ name, description }, item)) throw new Error('No information to update');
 
     const updateData = updateNewDataWithoutUndefined(item, { name, description });
 
