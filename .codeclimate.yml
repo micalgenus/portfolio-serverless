@@ -17,6 +17,6 @@ exclude_patterns:
   - '**/.babelrc'
   - 'LICENSE'
   - 'Dockerfile'
-  - 'mocah.init.js'
+  - 'mocha.init.js'
   - 'src/controllers/graphql/schemas/resolvers/*.ts'
   - 'src/tests/**/*.ts'

@@ -5,7 +5,7 @@ import { updateNewDataWithoutUndefined, checkEmptyItems, checkAllUndefinedValue,
 import { getCategoryItemCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
 
 import CategoryModel from './Category';
-import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
+import { updateItemsOrder, orderingSequences } from '@/lib/utils/order';
 
 class CategoryItemDatabase extends DataStore<CategoryItemTable> {
   constructor() {
@@ -24,7 +24,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
    */
   async createItemForCategory(category: string, user: string) {
     checkEmptyItems({ user });
-    await CategoryModel.checkExistCategoryByUserId(user, [category]);
+    await CategoryModel.checkExistCategoryByCategoryId(user, category);
 
     const createCategoryItem = { category, name: '', description: '', sequence: 0 };
 
@@ -52,7 +52,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     const cacheItem = await getCacheItem<CategoryItemTable[]>(category, getCategoryItemCacheKey);
     if (cacheItem) return returnCacheItemWithFilterOfArrayItems(cacheItem, filter);
 
-    const existCategory = await CategoryModel.checkExistCategoryByUserId(user, [category]);
+    const existCategory = await CategoryModel.checkExistCategoryByCategoryId(user, category);
 
     return this.findAndUpdateCacheItemWithFilter(existCategory._id.toString(), filter);
   }
@@ -60,7 +60,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
   async removeCategoryItemById(id: string, category: string, user: string) {
     checkEmptyItems({ id, category, user });
 
-    const existCategory = await CategoryModel.checkExistCategoryByUserId(user, [category]);
+    const existCategory = await CategoryModel.checkExistCategoryByCategoryId(user, category);
     if (existCategory.user !== user) throw new Error('Permission denied');
 
     const item = await this.read(id);
@@ -99,27 +99,13 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     return updated;
   }
 
-  async orderingSequences(items: CategoryItemTable[], sequences: { _id: string; sequence: number }[]): Promise<CategoryItemTable[]> {
-    for (const sequence of sequences) {
-      const result = await updateOrder(sequence._id, sequence.sequence, this);
-      if (!result) throw new Error('Fail update category sequence');
-
-      for (const item of items) {
-        if (item._id.toString() === sequence._id.toString()) item.sequence = sequence.sequence;
-      }
-    }
-
-    items.sort((a, b) => b.sequence - a.sequence);
-    return items;
-  }
-
   async updateCategoryItemSequence(category: string, user: string, sequences: { _id: string; sequence: number }[]) {
     checkEmptyItems({ category, sequences });
 
-    await CategoryModel.checkExistCategoryByUserId(user, [category]);
+    await CategoryModel.checkExistCategoryByCategoryId(user, category);
 
     const items = await this.getItemsByCategory(category, user);
-    const orderedItems = await this.orderingSequences(items, sequences);
+    const orderedItems = await orderingSequences(items, sequences, this);
 
     await this.updateItemsOrder(category, orderedItems);
     return true;

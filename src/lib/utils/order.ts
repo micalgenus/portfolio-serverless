@@ -48,6 +48,21 @@ export const updateItemsOrder = async <T extends OrderingTable, D extends Datast
   }
 
   const result = await updateCacheItem(parent, items, getCacheKey);
-  if (!result) throw new Error('Fail update category items sequence');
+  if (!result) throw new Error('updateItemsOrder: Fail update sequence');
   return true;
+};
+
+export const orderingSequences = async <T extends OrderingTable, D extends Datastore<T>>(
+  items: T[],
+  sequences: { _id: string; sequence: number }[],
+  database: D
+): Promise<T[]> => {
+  for (const sequence of sequences) {
+    for (const item of items) {
+      if (item._id.toString() === sequence._id.toString()) item.sequence = sequence.sequence;
+    }
+  }
+
+  items.sort((a, b) => b.sequence - a.sequence);
+  return items;
 };

@@ -1,9 +1,9 @@
 import DataStore from './index';
 import { CategoryTable } from '@/typings/database';
 
-import { updateNewDataWithoutUndefined, isChangeDataWithBefore } from '@/lib/utils';
+import { updateNewDataWithoutUndefined, isChangeDataWithBefore, checkEmptyItems, checkAllUndefinedValue } from '@/lib/utils';
 import { getCategoryCacheKey, returnCacheItemWithFilterOfArrayItems, updateCacheItem, getCacheItem, removeCacheItem } from '@/lib/utils/cache';
-import { updateItemsOrder, updateOrder } from '@/lib/utils/order';
+import { updateItemsOrder, orderingSequences } from '@/lib/utils/order';
 
 import UserModel from './User';
 import CategoryItemModel from './CategoryItem';
@@ -43,8 +43,8 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     return _id;
   }
 
-  async checkExistCategoryByUserId(user: string, filter?: string[]): Promise<CategoryTable> {
-    const [existCategory] = await this.getCategoryByUserId(user, filter);
+  async checkExistCategoryByCategoryId(user: string, category: string): Promise<CategoryTable> {
+    const [existCategory] = await this.getCategoryByUserId(user, [category]);
     if (!existCategory) throw new Error('Category not found');
 
     return existCategory;
@@ -67,20 +67,14 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   }
 
   async updateCategory(id: string, user: string, { name, sequence }: CategoryTable) {
-    if (!id || !user) throw new Error('Required id and user');
+    checkEmptyItems({ id, user });
+    checkAllUndefinedValue({ name, sequence });
 
-    if (name === undefined && sequence === undefined) throw new Error('No information to update');
-
-    const existUser = await UserModel.getUserInfoById(user);
-    if (!existUser) throw new Error('User not found');
-
-    const category = await this.read(id);
-    if (!category) throw new Error('Category not found');
+    const category = await this.checkExistCategoryByCategoryId(user, id);
+    if (category.user !== user) throw new Error('Permission denied');
 
     // Same data as before
     if (!isChangeDataWithBefore({ name, sequence }, category)) throw new Error('No information to update');
-
-    if (category.user !== user) throw new Error('Permission denied');
 
     const updateData = updateNewDataWithoutUndefined(category, { name, sequence });
 
@@ -94,37 +88,20 @@ class CategoryDatabase extends DataStore<CategoryTable> {
   }
 
   async updateCategorySequence(user: string, sequences: { _id: string; sequence: number }[]) {
-    if (sequences.length === 0) throw new Error('Requires that the sequences is not empty');
-
-    const existUser = await UserModel.getUserInfoById(user);
-    if (!existUser) throw new Error('User not found');
+    checkEmptyItems({ user, sequences });
 
     const categories = await this.getCategoryByUserId(user);
-    for (const sequence of sequences) {
-      const result = await updateOrder(sequence._id, sequence.sequence, this);
+    const orderedItems = await orderingSequences(categories, sequences, this);
 
-      if (!result) throw new Error('Fail update category sequence');
-
-      for (const category of categories) {
-        if (category._id === sequence._id) category.sequence = sequence.sequence;
-      }
-    }
-
-    categories.sort((a, b) => b.sequence - a.sequence);
-    await this.updateItemsOrder(user, categories);
+    await this.updateItemsOrder(user, orderedItems);
 
     return true;
   }
 
   async removeCategoryById(id: string, user: string) {
-    if (!id || !user) throw new Error('Required id and user');
+    checkEmptyItems({ id, user });
 
-    const existUser = await UserModel.getUserInfoById(user);
-    if (!existUser) throw new Error('User not found');
-
-    const category = await this.read(id);
-    if (!category) throw new Error('Category not found');
-
+    const category = await this.checkExistCategoryByCategoryId(user, id);
     if (category.user !== user) throw new Error('Permission denied');
 
     // TODO: with transaction for items...
@@ -134,7 +111,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
       if (!result) throw new Error('Fail remove category');
     }
 
-    const result = !!this.delete(id);
+    const result = !!(await this.delete(id));
 
     if (result) {
       const categories = (await this.getCategoryByUserId(user)).filter(c => c._id.toString() !== id);

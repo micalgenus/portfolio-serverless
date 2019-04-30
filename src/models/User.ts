@@ -36,13 +36,14 @@ class UserDatabase extends DataStore<UserTable> {
   }
 
   async checkValidUpdateEmail(oldEmail: string, newEmail: string): Promise<boolean> {
+    // if exist and changed email
     if (newEmail && newEmail !== oldEmail) {
+      // Check valid email
+      if (!UserUtils.checkValidEmail(newEmail)) throw new Error('Invalid email');
+
       // Check exist user email
       const { entities: existEmail } = await this.find([{ key: 'email', op: '=', value: newEmail }]);
       if (existEmail.length) throw new Error('Exist user email');
-
-      // Check valid email
-      if (newEmail && !UserUtils.checkValidEmail(newEmail)) throw new Error('Invalid email');
     }
 
     return true;
