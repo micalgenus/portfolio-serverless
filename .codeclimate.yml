@@ -20,3 +20,4 @@ exclude_patterns:
   - 'mocha.init.js'
   - 'src/controllers/graphql/schemas/resolvers/*.ts'
   - 'src/tests/**/*.ts'
+  - 'src/index.ts'

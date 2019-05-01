@@ -105,7 +105,7 @@ class CategoryItemDatabase extends DataStore<CategoryItemTable> {
     await CategoryModel.checkExistCategoryByCategoryId(user, category);
 
     const items = await this.getItemsByCategory(category, user);
-    const orderedItems = await orderingSequences(items, sequences, this);
+    const orderedItems = await orderingSequences(items, sequences);
 
     await this.updateItemsOrder(category, orderedItems);
     return true;

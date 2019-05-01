@@ -35,6 +35,12 @@ class UserDatabase extends DataStore<UserTable> {
     return this.createJwtToken({ ...user });
   }
 
+  /**
+   *
+   * @param oldEmail
+   * @param newEmail
+   * @returns {boolean} return only true on success. but when fail return `throw Error`.
+   */
   async checkValidUpdateEmail(oldEmail: string, newEmail: string): Promise<boolean> {
     // if exist and changed email
     if (newEmail && newEmail !== oldEmail) {

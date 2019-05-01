@@ -91,7 +91,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     checkEmptyItems({ user, sequences });
 
     const categories = await this.getCategoryByUserId(user);
-    const orderedItems = await orderingSequences(categories, sequences, this);
+    const orderedItems = await orderingSequences(categories, sequences);
 
     await this.updateItemsOrder(user, orderedItems);
 

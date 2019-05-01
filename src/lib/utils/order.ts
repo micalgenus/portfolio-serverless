@@ -52,17 +52,21 @@ export const updateItemsOrder = async <T extends OrderingTable, D extends Datast
   return true;
 };
 
-export const orderingSequences = async <T extends OrderingTable, D extends Datastore<T>>(
-  items: T[],
-  sequences: { _id: string; sequence: number }[],
-  database: D
-): Promise<T[]> => {
+/**
+ *
+ * @param items Original items
+ * @param sequences Sequences for change.
+ * @returns {items} Changed items
+ */
+export const orderingSequences = async <T extends OrderingTable>(items: T[], sequences: { _id: string; sequence: number }[]): Promise<T[]> => {
+  // Update sequence by {sequences}
   for (const sequence of sequences) {
     for (const item of items) {
       if (item._id.toString() === sequence._id.toString()) item.sequence = sequence.sequence;
     }
   }
 
+  // ORDER BY `sequence` DESC
   items.sort((a, b) => b.sequence - a.sequence);
   return items;
 };
