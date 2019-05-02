@@ -31,6 +31,11 @@ module.exports = {
     return UserModel.updateUserInfo(user._id, { username, email, github, linkedin, description });
   },
 
+  changeUserId: async (_, { id }, { user }) => {
+    if (!user) throw new Error('You are not authenticated!');
+    return UserModel.changeUserId(user._id, id);
+  },
+
   createCategory: async (_, __, { user }) => {
     if (!user) throw new Error('You are not authenticated!');
     return CategoryModel.createNewCategory(user.id);

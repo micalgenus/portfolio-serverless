@@ -2,7 +2,7 @@ import { Datastore, Query } from '@google-cloud/datastore';
 import { Operator } from '@google-cloud/datastore/build/src/query';
 import TestDatastore from 'nedb';
 
-import { checkUndefinedValue } from '@/lib/utils';
+import { checkUndefinedValue, trimString } from '@/lib/utils';
 
 import { DatabaseConnector, DatabaseFilterItem, DatabaseFindItem, TableTemplate } from '@/typings/database';
 
@@ -244,10 +244,10 @@ class AbstractedDataStore<T extends TableTemplate> implements DatabaseConnector<
   }
 
   async create(data: T) {
-    return this.connector.create(data);
+    return this.connector.create(trimString(data));
   }
   async update(id: string, data: T) {
-    return this.connector.update(id, data);
+    return this.connector.update(id, trimString(data));
   }
   async read(id: string) {
     return this.connector.read(id);

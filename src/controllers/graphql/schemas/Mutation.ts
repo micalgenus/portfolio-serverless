@@ -8,6 +8,7 @@ export default gql`
     rememberMe(user: String, id: String, email: String, password: String!): String
     rememberMeLogin(token: String!): String
     updateUserInfo(username: String, email: String, github: String, linkedin: String, description: String): User
+    changeUserId(id: String): User
     createCategory: String!
     updateCategory(id: String!, category: CategoryInput!): Category
     updateCategorySequence(sequences: [SequenceInput]!): Boolean!

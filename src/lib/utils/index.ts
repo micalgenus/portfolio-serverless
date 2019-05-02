@@ -23,6 +23,14 @@ export const checkAllUndefinedValue = <T extends {}>(items: T) => {
   throw new Error('No information to update');
 };
 
+export const trimString = (items: object) => {
+  for (const key in items) {
+    if (typeof items[key] === 'string') items[key] = items[key].trim();
+  }
+
+  return items;
+};
+
 /**
  * @return true: Same
  * @return false: Difference
@@ -36,8 +44,8 @@ export const isSameStringWithEmpty = (left: string, right: string) => (left || '
 export const isChangeString = (left: string, right: string) => !isSameStringWithEmpty(left, right);
 
 /**
- * @param {TableTemplate} data
- * @param {TableTemplate} compare
+ * @param data The data you want to change.
+ * @param compare Original data.
  * @return true: Changed
  * @return false: Not changed
  */
