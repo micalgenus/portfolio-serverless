@@ -37,8 +37,8 @@ GITHUB_OAUTH_CLIENT_SECRET=<github-client-secret>
 
 ##### GITHUB_OAUTH_CLIENT_*
 - Github에서 Developer settings에서 App을 추가하여 해당 정보를 입력해줍니다.
-- callback_url의 경우 [Client 서버](https://github.com/micalgenus/portfolio)의 `/login?type=github`로 작성합니다.
-  > https://portfolio.micalgenus.com/login?type=github
+  - callback_url의 경우 [Client 서버](https://github.com/micalgenus/portfolio)의 `/login?type=github`로 작성합니다.
+    > https://portfolio.micalgenus.com/login?type=github
 
 #### GCP key
 
