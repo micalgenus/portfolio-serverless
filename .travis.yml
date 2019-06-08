@@ -34,6 +34,7 @@ install:
 before_script:
   - yarn build
   - ./cc-test-reporter before-build
+  - gcloud auth activate-service-account --key-file=keyfile.json
 
 script:
   - yarn test
