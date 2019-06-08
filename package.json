@@ -10,6 +10,7 @@
     "start:dev:ts": "NODE_ENV=test nodemon --watch src/ --exec babel-node --extensions \".ts,.tsx\" src/tests/app.ts",
     "deploy": "yarn deploy:gcp",
     "deploy:gcp": "serverless deploy",
+    "postdeploy:gcp": "gcloud datastore indexes create index.yml",
     "test": "NODE_ENV=test mocha ./dist/tests/**/*.spec.js",
     "test:coverage": "NODE_ENV=test nyc mocha ./dist/tests/**/*.spec.js",
     "test:ts": "NODE_ENV=test mocha -r ./mocha.init.js ./src/tests/**/*.spec.ts",

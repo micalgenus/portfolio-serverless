@@ -1,0 +1,33 @@
+indexes:
+- kind: category
+  properties:
+  - name: name
+  - name: user
+  - name: sequence
+
+- kind: category
+  properties:
+  - name: user
+  - name: sequence
+
+- kind: category
+  properties:
+  - name: user
+  - name: sequence
+    direction: desc
+
+- kind: user
+  properties:
+  - name: id
+  - name: email
+  - name: username
+  - name: github
+  - name: linkedin
+  - name: description
+  - name: isAdmin
+
+- kind: categoryItem
+  properties:
+  - name: category
+  - name: sequence
+    direction: desc
