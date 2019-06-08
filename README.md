@@ -42,7 +42,13 @@ GITHUB_OAUTH_CLIENT_SECRET=<github-client-secret>
 
 #### GCP key
 
-해당 프로젝트에 **Google Cloud Platform**의 key를 받아 `keyfile.json`을 프로젝트에 포함시킵니다.
+프로젝트에 **Google Cloud Platform**의 key를 받아 `keyfile.json`을 프로젝트에 포함시킵니다.
+해당 계정은 다음과 같은 권한을 가지고 있어야 합니다.
+- Cloud Functions Developer
+- Cloud Datastore Index Admin
+- Deployment Manager Editor
+- Logging Admin
+- Storage Admin
 
 #### RSA 인증서
 
