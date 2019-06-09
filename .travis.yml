@@ -43,7 +43,7 @@ script:
 
 deploy:
   - provider: script
-    script: yarn deploy:gcp
+    script: yarn deploy:gcp --force
     skip_cleanup: true
     on:
       branch: develop
