@@ -30,12 +30,15 @@ GITHUB_OAUTH_CLIENT_SECRET=<github-client-secret>
 ```
 
 ##### GOOGLE_DATASTORE_PROJECT_ID
+
 - 배포하고자 하는 Cloud Functions와 같은 프로젝트에 존재하는 Cloud Datastore이여야 합니다.
 
-##### REDIS_*
+##### REDIS_\*
+
 - Redis 서버의 정보를 입력해줍니다.
 
-##### GITHUB_OAUTH_CLIENT_*
+##### GITHUB_OAUTH_CLIENT_\*
+
 - Github에서 Developer settings에서 App을 추가하여 해당 정보를 입력해줍니다.
   - callback_url의 경우 [Client 서버](https://github.com/micalgenus/portfolio)의 `/login?type=github`로 작성합니다.
     > https://portfolio.micalgenus.com/login?type=github
@@ -44,6 +47,7 @@ GITHUB_OAUTH_CLIENT_SECRET=<github-client-secret>
 
 프로젝트에 **Google Cloud Platform**의 key를 받아 `keyfile.json`을 프로젝트에 포함시킵니다.
 해당 계정은 다음과 같은 권한을 가지고 있어야 합니다.
+
 - Cloud Functions Developer
 - Cloud Datastore Index Admin
 - Deployment Manager Editor
@@ -74,10 +78,11 @@ $ travis encrypt-file travis-secret.tar --add
 ```
 
 ## Development progress.
-- [X] Signup & Login
-- [X] OAuth Login (Github)
+
+- [x] Signup & Login
+- [x] OAuth Login (Github)
 - [ ] Connect to OAuth (in profile)
-- [X] Change user profile (category)
+- [x] Change user profile (category)
 - [ ] Change user profile (category items documentation)
 - [ ] Change user profile (user information)
 - [ ] Send to email for valid email check
