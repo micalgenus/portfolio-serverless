@@ -39,7 +39,7 @@ before_script:
 script:
   - yarn test
   - yarn test:ts:coverage
-  - docker build -t micalgenus/portfolio-serverless-docs:develop .
+  # - docker build -t micalgenus/portfolio-serverless-docs:develop .
 
 deploy:
   - provider: script
@@ -47,11 +47,11 @@ deploy:
     skip_cleanup: true
     on:
       branch: develop
-  - provider: script
-    script: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD && docker push micalgenus/portfolio-serverless-docs:develop && docker logout
-    skip_cleanup: true
-    on:
-      branch: develop
+  # - provider: script
+  #   script: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD && docker push micalgenus/portfolio-serverless-docs:develop && docker logout
+  #   skip_cleanup: true
+  #   on:
+  #     branch: develop
 
 after_script:
   - ./cc-test-reporter after-build --id $CC_TEST_REPORTER_ID --exit-code $TRAVIS_TEST_RESULT
