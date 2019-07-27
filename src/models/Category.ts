@@ -40,7 +40,7 @@ class CategoryDatabase extends DataStore<CategoryTable> {
     const categories = [...beforeCategories, { _id: _id, ...createCategory }];
     await this.updateItemsOrder(user, categories);
 
-    return _id;
+    return _id.toString();
   }
 
   async checkExistCategoryByCategoryId(user: string, category: string): Promise<CategoryTable> {
