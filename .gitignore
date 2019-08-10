@@ -41,7 +41,7 @@ node_modules
 /dist
 
 # editors
-/.vscode
+# /.vscode
 
 # certification files
 private.pem
