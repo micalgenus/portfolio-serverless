@@ -88,6 +88,3 @@ $ travis encrypt-file travis-secret.tar --add
 - [ ] Change user profile (user information)
 - [ ] Send to email for valid email check
 - [ ] Update user page with custom SCSS
-
-
-##### PR TEST
