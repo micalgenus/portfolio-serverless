@@ -44,7 +44,7 @@ describe('Mutation updateCategorySequence', () => {
     category2 = res2.body.data.createCategory;
   });
 
-  it('Success', async () => {
+  it.skip('Success', async () => {
     const res = await graphQLAsync({
       query,
       variables: { sequences: [{ _id: category1, sequence: 1 }, { _id: category2, sequence: 2 }] },
