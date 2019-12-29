@@ -5,6 +5,8 @@ export const getUserCacheKey = (id: string) => `user:${id}`;
 export const getCategoryCacheKey = (id: string) => `category:${id}`;
 export const getCategoryItemCacheKey = (id: string) => `categoryItem:${id}`;
 
+const USE_CACHE = false;
+
 /**
  * @param items Caching data
  * @param filter Array of _id in items
@@ -16,17 +18,29 @@ export const returnCacheItemWithFilterOfArrayItems = <T extends TableTemplate>(i
 };
 
 export const updateCacheItem = async <T extends TableTemplate>(id: string, items: T | T[], getKey: (id: string) => string): Promise<boolean> => {
-  const result = await cache.set(getKey(id), JSON.stringify(items), 'EX', CACHE_EXPIRE);
-  return result === 'OK';
+  if (USE_CACHE) {
+    const result = await cache.set(getKey(id), JSON.stringify(items), 'EX', CACHE_EXPIRE);
+    return result === 'OK';
+  } else {
+    return true;
+  }
 };
 
 export const getCacheItem = async <T extends TableTemplate | Array<TableTemplate>>(id: string, getKey: (id: string) => string): Promise<T> => {
-  const data = await cache.get(getKey(id)).catch(() => null);
-  if (data) return JSON.parse(data);
-  return null;
+  if (USE_CACHE) {
+    const data = await cache.get(getKey(id)).catch(() => null);
+    if (data) return JSON.parse(data);
+    return null;
+  } else {
+    return null;
+  }
 };
 
 export const removeCacheItem = async (id: string, getKey: (id: string) => string): Promise<boolean> => {
-  const result = await cache.del(getKey(id));
-  return !!result;
+  if (USE_CACHE) {
+    const result = await cache.del(getKey(id));
+    return !!result;
+  } else {
+    return true;
+  }
 };
